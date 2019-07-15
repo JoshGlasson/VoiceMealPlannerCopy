@@ -10,7 +10,7 @@ var port=process.env.PORT || 3000;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-routes(app);
+app.get('/api/ping', routes.ping);
 
 app.listen(port);
 

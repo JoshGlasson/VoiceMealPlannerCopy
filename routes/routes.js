@@ -9,6 +9,10 @@ db = client.db("testdatabase");
 client.close();
 });
 
+export function ping(req, res){
+    res.status(200).send('hello');
+}
+
 var appRouter = function (app) {
     app.get("/", function (req, res) {
          res.status(200).send({ message: 'Welcome to our restful API' });
@@ -19,9 +23,6 @@ var appRouter = function (app) {
               'text': text
          }
          res.status(200).send(data);
-    });
-    app.get("/ping", function (req, res) {
-        res.status(200).send({ message: 'Hello' });
     });
     app.post("/test", function(req, res){
 
