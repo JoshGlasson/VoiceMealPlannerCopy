@@ -4,7 +4,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const {
         dialogflow, 
-        Permission
+        Permission,
+        Suggestions
       } = require('actions-on-google');
 
 const port = process.env.PORT || 4567;
