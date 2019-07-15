@@ -25,9 +25,9 @@ var appRouter = function (app) {
     });
     app.post("/test", function(req, res){
 
-        var googleRequest = db.collection('Request1');
+        var collection = db.collection('Request1');
         
-        googleRequest.insertOne(req.body, function(err, response){
+        collection.insertOne(req.body, function(err, response){
             if (!err) {
                 res.sendStatus(201);
                 console.log(response)
