@@ -20,8 +20,9 @@ app.intent('Default Welcome Intent', (conv) => {
       context: 'Hi there, to get to know you better',
       permissions: 'NAME',
     }));
+    conv.ask(new Suggestions('Yes', 'No'));
   } else {
-    conv.ask(`Hi again, ${name}. What's your favorite color?`);
+    conv.ask(`Hi again, ${name}. What would you like to eat?`);
   }
 });
 
@@ -30,15 +31,13 @@ app.intent('Default Welcome Intent', (conv) => {
 app.intent('actions_intent_PERMISSION', (conv, params, permissionGranted) => {
   if (!permissionGranted) {
     // If the user denied our request, go ahead with the conversation.
-    conv.ask(`OK, no worries. What's your favorite color?`);
-    conv.ask(new Suggestions('Blue', 'Red', 'Green'));
+    conv.ask(`OK, no worries. What would you like to eat?`);
   } else {
     // If the user accepted our request, store their name in
     // the 'conv.user.storage' object for future conversations.
     conv.user.storage.userName = conv.user.name.display;
     conv.ask(`Thanks, ${conv.user.storage.userName}. ` +
-      `What's your favorite color?`);
-    conv.ask(new Suggestions('Blue', 'Red', 'Green'));
+      `What would you like to eat?`);
   }
 });
 
@@ -48,9 +47,9 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
   // Use the number of reprompts to vary response
   const repromptCount = parseInt(conv.arguments.get('REPROMPT_COUNT'));
   if (repromptCount === 0) {
-    conv.ask('Which color would you like to hear about?');
+    conv.ask('What would you like to eat?');
   } else if (repromptCount === 1) {
-    conv.ask(`Please say the name of a color.`);
+    conv.ask(`Let me know what you want to eat`);
   } else if (conv.arguments.get('IS_FINAL_REPROMPT')) {
     conv.close(`Sorry we're having trouble. Let's ` +
       `try this again later. Goodbye.`);
