@@ -1,18 +1,10 @@
-import express from 'express';
-import { ping, test } from './routes/decisions';
-import { json } from 'body-parser';
-
-var port = process.env.port || 7054
-
+var express = require("express");
+var bodyParser = require("body-parser");
+var routes = require("./routes/routes.js");
 var app = express();
-app.use(json());
-
-app.get('/api/ping', ping);
-app.post('/api/test', test);
-
-app.listen(port, function(err){
-  if (!err) {
-    console.log("Tesco Meal Planner API is listening on port "+port+"...");
-  }
-});
-
+var port=process.env.PORT || 3000;
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+routes(app);
+app.listen(port);
+console.log('Server Listening at port'+port);
