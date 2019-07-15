@@ -9,11 +9,18 @@
 // client.close();
 // });
 
+const {
+    dialogflow,
+    Permission,
+  } = require('actions-on-google');
+
+const google = dialogflow({debug: true});
+
 var appRouter = function (app) {
     app.get("/", function (req, res) {
          res.status(200).send({ message: 'Welcome to our restful API' });
     });
-    app.intent('Default Welcome Intent', (conv) => {
+    google.intent('Default Welcome Intent', (conv) => {
         const name = conv.user.storage.userName;
         if (!name) {
           // Asks the user's permission to know their name, for personalization.
@@ -24,6 +31,6 @@ var appRouter = function (app) {
         } else {
           conv.ask(`Hi again, ${name}. What's your favorite color?`);
         }
-      });
+    });
 }
 module.exports = appRouter;
