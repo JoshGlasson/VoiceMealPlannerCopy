@@ -2,11 +2,14 @@
 /* eslint-disable no-console */
 const express = require('express');
 const bodyParser = require('body-parser');
-const {dialogflow} = require('actions-on-google');
+const {
+        dialogflow, 
+        Permission
+      } = require('actions-on-google');
 
 const port = process.env.PORT || 4567;
 
-const app = dialogflow();
+const app = dialogflow({debug: true});
 
 app.intent('Default Welcome Intent', (conv) => {
   const name = conv.user.storage.userName;
