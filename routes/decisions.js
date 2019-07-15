@@ -9,5 +9,11 @@
 // }); 
 
 export function ping(req, res){
-  res.status(200).send('Hello');
+    res.status(200).send('Hello');
+}
+
+export function test(req, res){
+    var requestText = req.body;
+    console.log(requestText);
+    res.sendStatus(200)
 }

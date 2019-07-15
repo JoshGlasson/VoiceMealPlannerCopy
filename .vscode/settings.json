@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/acbf9a73-f46b-4ea0-bbab-3c0132a9ad8c/resourceGroups/TescoMealPlannerTest/providers/Microsoft.Web/sites/TescoMealPlannerTest",
+    "appService.deploySubpath": ""
+}
