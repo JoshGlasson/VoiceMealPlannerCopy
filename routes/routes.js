@@ -1,14 +1,12 @@
 /* eslint-disable no-console */
 /* eslint-disable no-undef */
 
-var mongoClient = require('mongodb').MongoClient
+var mongoClient = require("mongodb").MongoClient;
+var db = {};
 
-var mongoDb = {};
-mongoClient.connect('mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw==@tmptest.documents.azure.com:10255/?ssl=true', function(err, client){
-  if (!err) {
-    console.log('Connected to MongoDB!');
-    mongoDb = client.db('tmp');
-  }
+mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw%3D%3D@tmptest.documents.azure.com:10255/?ssl=true", function (err, client) {
+db = client.db("tmptest");  
+client.close();
 });
 
 var appRouter = function (app) {
