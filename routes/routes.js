@@ -25,7 +25,7 @@ var appRouter = function (app) {
     });
     app.post("/test", function(req, res){
 
-        var googleRequest = mongoDb.collection('requestData');
+        var googleRequest = db.collection('requestData');
         
         googleRequest.insertOne(req.body, function(err, response){
             if (!err) {
