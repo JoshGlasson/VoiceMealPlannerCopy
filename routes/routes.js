@@ -18,5 +18,8 @@ var appRouter = function (app) {
          }
          res.status(200).send(data);
     });
+    app.get("/ping", function (req, res) {
+        res.status(200).send({ message: 'Hello' });
+   });
 }
 module.exports = appRouter;
