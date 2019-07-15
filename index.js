@@ -1,17 +1,18 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-console */
-var express = require("express");
-var bodyParser = require("body-parser");
-var routes = require("./routes/routes.js");
+const express = require('express');
+const bodyParser = require('body-parser');
+const {dialogflow} = require('actions-on-google');
 
-var app = express();
-var port=process.env.PORT || 3000;
+const port = process.env.PORT || 4567;
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+const app = dialogflow();
 
-routes(app);
+app.intent('Default Welcome Intent', conv => {
+    conv.close('Hello, Azure!');
+});
 
-app.listen(port);
+const expressApp = express().use(bodyParser.json());
 
-console.log('Server Listening at port'+port);
+expressApp.post('/', app);
+expressApp.listen(port);
