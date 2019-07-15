@@ -5,7 +5,7 @@ var mongoClient = require("mongodb").MongoClient;
 var db = {};
 
 mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw%3D%3D@tmptest.documents.azure.com:10255/?ssl=true", function (err, client) {
-db = client.db("tmptest");  
+db = client.db("requestData");  
 client.close();
 });
 
@@ -25,7 +25,7 @@ var appRouter = function (app) {
     });
     app.post("/test", function(req, res){
 
-        var googleRequest = db.collection('requestData');
+        var googleRequest = db.collection('Request1');
         
         googleRequest.insertOne(req.body, function(err, response){
             if (!err) {
