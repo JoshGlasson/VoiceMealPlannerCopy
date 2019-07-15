@@ -8,7 +8,7 @@ const port = process.env.PORT || 4567;
 
 const app = dialogflow();
 
-app.intent('Default Welcome Intent', conv => {
+app.intent('Default Welcome Intent', (conv) => {
   const name = conv.user.storage.userName;
   if (!name) {
     // Asks the user's permission to know their name, for personalization.
