@@ -9,7 +9,8 @@
 // }); 
 
 export function ping(req, res){
-    res.status(200).send('Hello');
+    res.writeHead(200, {'Content-Type':'text/plain'});
+    res.end('Hello World\n');
 }
 
 export function test(req, res){
