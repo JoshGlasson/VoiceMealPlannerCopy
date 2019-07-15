@@ -59,6 +59,10 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
   }
 });
 
+app.intent('Meal_Planner', (conv, {food}) => {
+  conv.ask(food);
+});
+
 
 
 const expressApp = express().use(bodyParser.json());
