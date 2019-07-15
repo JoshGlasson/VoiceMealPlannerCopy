@@ -22,7 +22,8 @@ app.intent('Default Welcome Intent', (conv) => {
     }));
     conv.ask(new Suggestions('Yes', 'No'));
   } else {
-    conv.ask(`Hi again, ${name}. What would you like to eat?`);
+    conv.ask(`Hi again, ${name}. Would you like to plan a meal?`);
+    conv.ask(new Suggestions('yes', 'no'));
   }
 });
 
@@ -31,13 +32,15 @@ app.intent('Default Welcome Intent', (conv) => {
 app.intent('actions_intent_PERMISSION', (conv, params, permissionGranted) => {
   if (!permissionGranted) {
     // If the user denied our request, go ahead with the conversation.
-    conv.ask(`OK, no worries. What would you like to eat?`);
+    conv.ask(`OK, no worries. Would you like to plan a meal?`);
+    conv.ask(new Suggestions('yes', 'no'));
   } else {
     // If the user accepted our request, store their name in
     // the 'conv.user.storage' object for future conversations.
     conv.user.storage.userName = conv.user.name.display;
     conv.ask(`Thanks, ${conv.user.storage.userName}. ` +
-      `What would you like to eat?`);
+      `Would you like to plan a meal?`);
+    conv.ask(new Suggestions('yes', 'no'));
   }
 });
 
