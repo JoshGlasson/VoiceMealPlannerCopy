@@ -17,7 +17,7 @@ const {
 const google = dialogflow({debug: true});
 
 var appRouter = function (app) {
-    app.get("/", function (req, res) {
+    app.post("/api/test", function (req, res) {
          res.status(200).send({ message: 'Welcome to our restful API' });
     });
     google.intent('Default Welcome Intent', (conv) => {
