@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-console */
 var express = require("express");
 var bodyParser = require("body-parser");
 var routes = require("./routes/routes.js");
