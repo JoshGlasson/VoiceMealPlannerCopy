@@ -1,0 +1,31 @@
+{
+  "name": "tescomealplanner",
+  "version": "0.0.1",
+  "description": "API for Google Home Meal Planner",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "esm": "^3.2.25",
+    "express": "^4.17.1",
+    "mongodb": "^3.2.7",
+    "nodemon": "^1.19.1",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.7",
+    "sinon": "^7.3.2"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^5.16.0",
+    "eslint-config-google": "^0.12.0",
+    "eslint-plugin-promise": "^4.1.1",
+    "express-todo-api": "^1.1.1",
+    "mocha": "^5.2.0",
+    "nock": "^10.0.2",
+    "nyc": "^14.1.1"
+  }
+}
