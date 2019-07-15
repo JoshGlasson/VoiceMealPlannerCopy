@@ -9,7 +9,7 @@ db = client.db("testdatabase");
 client.close();
 });
 
-export function ping(req, res){
+exports.ping = function(req, res){
     res.status(200).send('hello');
 }
 
