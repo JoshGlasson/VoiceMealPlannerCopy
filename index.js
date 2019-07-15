@@ -12,7 +12,7 @@ app.post('/api/test', test);
 
 app.listen(port, function(err){
   if (!err) {
-    console.log("Tesco Meal Planner API is listening on port 7054...");
+    console.log("Tesco Meal Planner API is listening on port "+port+"...");
   }
 });
 
