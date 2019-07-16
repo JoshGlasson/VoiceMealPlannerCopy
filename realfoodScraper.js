@@ -18,7 +18,6 @@ exports.scrape = function(searchTerm) {
           tempArray = []
         }
       }
-      console.log(recipes[Math.floor(Math.random() * recipes.length)][0]);
       return recipes;
     })
     .catch(function(err){
