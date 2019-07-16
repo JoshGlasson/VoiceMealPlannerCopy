@@ -17,10 +17,9 @@ exports.scrape = function(searchTerm) {
           tempArray = []
         }
       }
-      console.log(recipes)
+      return recipes;
     })
     .catch(function(err){
       //handle error
     });
-    return recipes;
 }
