@@ -77,12 +77,20 @@ function mealSearch(conv, food){
   .then(function(result){
     log.info('Result Returned before Conv')
     let foodChoice = []
-    foodChoice = result.splice(Math.floor(Math.random()*result.length), 1);
+    foodChoice = move(result, Math.floor(Math.random()*array.length), array.length -1);
     
     conv.ask("Would you like " + foodChoice[0]);
     log.info('After Conv')
     return 
   })
+}
+
+function move(array, oldIndex, newIndex){
+  if(newIndex >= array.length) {
+    newIndex = array.length - 1;
+  }
+  array.splice(newIndex,0,array.splice(oldIndex, 1)[0])
+  return array;
 }
 
 
