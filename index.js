@@ -8,7 +8,7 @@ const {
         Suggestions
       } = require('actions-on-google');
 
-var realFood = require('./realfoodScraper');
+const realFood = require('./realfoodScraper');
 var foodArray = []
 
 const port = process.env.PORT || 4567;
@@ -23,7 +23,6 @@ app.intent('Default Welcome Intent', (conv) => {
       context: 'Hi there, to get to know you better',
       permissions: 'NAME',
     }));
-    conv.ask(new Suggestions('Yes', 'No'));
   } else {
     conv.ask(`Hi again, ${name}. Would you like to plan a meal?`);
     conv.ask(new Suggestions('yes', 'no'));
@@ -63,7 +62,9 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
 });
 
 app.intent('Meal_Planner', (conv, {food}) => {
-  foodArray = realFood.scrape(food);
+  realFood.scrape(food).then(function(result){
+    foodArray = result;
+  })
   if (foodArray != []) {
     conv.ask("Would you like " + foodArray[Math.floor(Math.random() * foodArray.length)][0]);
   }
