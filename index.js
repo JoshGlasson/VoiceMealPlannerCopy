@@ -67,10 +67,19 @@ app.intent('Meal_Planner', (conv, {food}) => {
   return realFood.scrape(food)
   .then(function(result){
     log.info('Result Returned before Conv')
-    conv.ask("Would you like " + result[Math.floor(Math.random() * result.length)][0]);
+
+    conv.data.food = result;
+    let foodChoice = conv.data.food.splice(Math.floor(Math.random()*array.length), 1);
+    
+    conv.ask("Would you like " + foodChoice[0]);
     log.info('After Conv')
     return 
   })
+});
+
+app.intent('Meal_Planner - no', (conv) => {
+  let foodChoice = conv.data.food.splice(Math.floor(Math.random()*array.length), 1);
+  conv.ask("Would you like " + foodChoice[0]);
 });
 
 
