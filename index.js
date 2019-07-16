@@ -9,8 +9,8 @@ const {
       } = require('actions-on-google');
 
 const realFood = require('./realfoodScraper');
-var foodArray = []
-
+const bunyan = require('bunyan');
+const log = bunyan.createLogger({name: "tmp"});
 
 const port = process.env.PORT || 4567;
 
@@ -63,9 +63,12 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
 });
 
 app.intent('Meal_Planner', (conv, {food}) => {
+  log.info('Start')
   return realFood.scrape(food)
   .then(function(result){
+    log.info('Result Returned before Conv')
     conv.ask("Would you like " + result[Math.floor(Math.random() * result.length)][0]);
+    log.info('After Conv')
     return 
   })
 });
