@@ -13,13 +13,15 @@ exports.scrape = function (searchTerm) {
     .then(function(html){
       log.info('Add to Array')
       var tempArray = []
-      for (let i = 0; i < $('.recipe-link', html).length; i++) {
-        if($('.recipe-link',html)[i].attribs.href.substring(0,8) == "/recipes") {
-          tempArray.push($('.recipe-link',html)[i].attribs.title);
-          tempArray.push($('.recipe-link',html)[i].attribs.href);
+      var recipeLinks = $('.recipe-link', html);
+
+      for (let i = 0; i < recipeLinks.length; i++) {
+        if(recipeLinks[i].attribs.href.substring(0,8) == "/recipes") {
+          tempArray.push(recipeLinks[i].attribs.title);
+          tempArray.push(recipeLinks[i].attribs.href);
           recipes.push(tempArray);
           tempArray = []
-          break
+          // break
         }
       }
       log.info('Scrape Finished')
