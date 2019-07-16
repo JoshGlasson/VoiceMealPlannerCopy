@@ -8,6 +8,8 @@ const {
         Suggestions
       } = require('actions-on-google');
 
+var realFood = require('./realfoodScraper');
+
 const port = process.env.PORT || 4567;
 
 const app = dialogflow({debug: true});
@@ -60,7 +62,7 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
 });
 
 app.intent('Meal_Planner', (conv, {food}) => {
-  conv.ask(food);
+  conv.ask("Would you like "+realFood.scrape(food)[Math.floor(Math.random() * myArray.length)]);
 });
 
 
