@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const rp = require('request-promise');
 const $ = require('cheerio');
 const url = "https://realfood.tesco.com/search.html?search=";
