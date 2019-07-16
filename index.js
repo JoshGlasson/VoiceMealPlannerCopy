@@ -9,6 +9,7 @@ const {
       } = require('actions-on-google');
 
 var realFood = require('./realfoodScraper');
+var foodArray = []
 
 const port = process.env.PORT || 4567;
 
@@ -62,7 +63,7 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
 });
 
 app.intent('Meal_Planner', (conv, {food}) => {
-  var foodArray = realFood.scrape(food);
+  foodArray = realFood.scrape(food);
   if (foodArray != []) {
     conv.ask("Would you like " + foodArray[Math.floor(Math.random() * foodArray.length)][0]);
   }
