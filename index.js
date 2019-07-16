@@ -62,7 +62,8 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
 });
 
 app.intent('Meal_Planner', (conv, {food}) => {
-  conv.ask("Would you like "+realFood.scrape(food)[Math.floor(Math.random() * myArray.length)]);
+  var foodArray = realFood.scrape(food);
+  conv.ask("Would you like "+foodArray[Math.floor(Math.random() * foodArray.length)][0]);
 });
 
 
