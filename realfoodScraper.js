@@ -5,7 +5,6 @@ const recipes = []
 
 exports.scrape = function(searchTerm) {
   var website = url+searchTerm
-  console.log(website);
   rp(website)
     .then(function(html){
       //success!
@@ -18,9 +17,10 @@ exports.scrape = function(searchTerm) {
           tempArray = []
         }
       }
-      return recipes;
+      console.log(recipes)
     })
     .catch(function(err){
       //handle error
     });
+    return recipes;
 }
