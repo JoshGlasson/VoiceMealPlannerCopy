@@ -63,7 +63,7 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
 });
 
 app.intent('Meal_Planner', (conv, {food}) => {
-  mealSearch(conv, food)
+  return mealSearch(conv, food)
 });
 
 app.intent('Meal_Planner - no', (conv) => {
