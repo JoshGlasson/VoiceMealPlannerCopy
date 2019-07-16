@@ -69,6 +69,7 @@ app.intent('Meal_Planner', (conv, {food}) => {
     log.info('Result Returned before Conv')
 
     conv.data.food = result;
+    log.info(conv.data.food)
     let foodChoice = conv.data.food.splice(Math.floor(Math.random()*array.length), 1);
     
     conv.ask("Would you like " + foodChoice[0]);
