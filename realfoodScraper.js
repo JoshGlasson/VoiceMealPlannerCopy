@@ -19,6 +19,7 @@ exports.scrape = function (searchTerm) {
           tempArray.push($('.recipe-link',html)[i].attribs.href);
           recipes.push(tempArray);
           tempArray = []
+          break
         }
       }
       log.info('Scrape Finished')
