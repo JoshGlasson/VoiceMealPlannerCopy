@@ -1,10 +1,10 @@
 const rp = require('request-promise');
 const $ = require('cheerio');
 const url = "https://realfood.tesco.com/search.html?search=";
-var recipes = []
 
 
   exports.scrape = function (searchTerm) {
+    var recipes = []
     var website = url+searchTerm
     return rp(website)
       .then(function(html){
