@@ -66,8 +66,9 @@ app.intent('Meal_Planner', (conv, {food}) => {
     foodArray = result;
   })
   if (foodArray != []) {
-    conv.ask("Would you like " + foodArray[(foodArray.length)-1][0]);
+    conv.ask("Would you like " + foodArray[Math.floor(Math.random() * foodArray.length)][0]);
   }
+  foodArray = []
 });
 
 
