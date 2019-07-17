@@ -133,12 +133,15 @@ function move(array, oldIndex, newIndex){
 
 app.intent('Meal_Planner - yes', (conv) => {
   today = new Date();
+  log.info(userId); 
+
   var collection = db.collection('testcollection');   
-  log.info(userId);   
+
   collection.insertOne({
     "userId": userId,
-    "recipe": conv.data.foodChoice, 
-    "date": today
+    "meals": [
+      {"date": today.toString(), "recipe": conv.data.foodChoice}
+    ]
   }, function(err, response){
     if (!err) {
       log.info(response)
