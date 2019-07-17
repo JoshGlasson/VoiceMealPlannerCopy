@@ -16,10 +16,18 @@ const port = process.env.PORT || 4567;
 
 const app = dialogflow({debug: true});
 
+var mongoClient = require("mongodb").MongoClient;
+var db = {};
+
+mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw%3D%3D@tmptest.documents.azure.com:10255/?ssl=true", { useNewUrlParser: true },function (err, client) {
+  db = client.db("testdatabase");  
+});
+
 app.intent('Default Welcome Intent', (conv) => {
   const googleName = conv.user.storage.userName;
   log.info('Stored Name ' + googleName)
   conv.data.food = [];
+  conv.data.foodChoice = [];
   conv.data.count = 0
   if (!googleName) {
     // Asks the user's permission to know their name, for personalization.
@@ -81,11 +89,10 @@ function mealSearch(conv, food){
     return realFood.scrape(food)
   .then(function(result){
     log.info('Result Returned before Conv')
-    let foodChoice = []
     conv.data.food = result
     move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
-    foodChoice = conv.data.food.pop();
-    conv.ask("Would you like " + foodChoice[0]);
+    conv.data.foodChoice = conv.data.food.pop();
+    conv.ask("Would you like " + conv.data.foodChoice[0]);
     log.info('After Conv')
     conv.data.count++
     return 
@@ -93,8 +100,8 @@ function mealSearch(conv, food){
   } else {
     log.info('Count more than 0')
     move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
-    foodChoice = conv.data.food.pop();
-    conv.ask("Would you like " + foodChoice[0]);
+    conv.data.foodChoice = conv.data.food.pop();
+    conv.ask("Would you like " + conv.data.foodChoice[0]);
     log.info('After Conv')
     conv.data.count++
     return 
@@ -109,6 +116,16 @@ function move(array, oldIndex, newIndex){
   return array;
 }
 
+app.intent('Meal_Planner - yes', (conv) => {
+  today = new Date();
+  var collection = db.collection('testcollection');      
+  collection.insertOne({"recipe": conv.data.foodChoice, "date": today}, function(err, response){
+    if (!err) {
+      log.info(response)
+    }
+  });
+  conv.close("I have saved this for tonights dinner. Enjoy your meal, goodbye!")
+});
 
 
 const expressApp = express().use(bodyParser.json());
