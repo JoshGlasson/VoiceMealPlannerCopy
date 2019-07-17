@@ -11,6 +11,8 @@ const {
 const realFood = require('./realfoodScraper');
 const bunyan = require('bunyan');
 const log = bunyan.createLogger({name: "tmp"});
+const generateUUID = require('uuid/v4');
+let userId = null;
 
 const port = process.env.PORT || 4567;
 
@@ -29,6 +31,19 @@ app.intent('Default Welcome Intent', (conv) => {
   conv.data.food = [];
   conv.data.foodChoice = [];
   conv.data.count = 0
+
+  if ('userId' in conv.user.storage) {
+    userId = conv.user.storage.userId;
+  } else {
+    // generateUUID is your function to generate ids.
+    userId = generateUUID();
+    conv.user.storage.userId = userId
+  }
+
+
+
+  log.info(conv.user.storage.userId);
+
   if (!googleName) {
     // Asks the user's permission to know their name, for personalization.
     conv.ask(new Permission({
@@ -118,8 +133,13 @@ function move(array, oldIndex, newIndex){
 
 app.intent('Meal_Planner - yes', (conv) => {
   today = new Date();
-  var collection = db.collection('testcollection');      
-  collection.insertOne({"recipe": conv.data.foodChoice, "date": today}, function(err, response){
+  var collection = db.collection('testcollection');   
+  log.info(userId);   
+  collection.insertOne({
+    "userId": userId,
+    "recipe": conv.data.foodChoice, 
+    "date": today
+  }, function(err, response){
     if (!err) {
       log.info(response)
     }
