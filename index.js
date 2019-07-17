@@ -32,18 +32,6 @@ app.intent('Default Welcome Intent', (conv) => {
   conv.data.foodChoice = [];
   conv.data.count = 0
 
-  if ('userId' in conv.user.storage) {
-    userId = conv.user.storage.userId;
-  } else {
-    // generateUUID is your function to generate ids.
-    userId = generateUUID();
-    conv.user.storage.userId = userId
-  }
-
-
-
-  log.info(conv.user.storage.userId);
-
   if (!googleName) {
     // Asks the user's permission to know their name, for personalization.
     conv.ask(new Permission({
@@ -51,6 +39,7 @@ app.intent('Default Welcome Intent', (conv) => {
       permissions: 'NAME',
     }));
   } else {
+    checkUserId(conv);
     conv.ask(`Hi again, ${googleName}. Would you like to plan a meal?`);
     conv.ask(new Suggestions('yes', 'no'));
   }
@@ -62,11 +51,13 @@ app.intent('actions_intent_PERMISSION', (conv, params, permissionGranted) => {
   if (!permissionGranted) {
     // If the user denied our request, go ahead with the conversation.
     conv.ask(`OK, no worries. Would you like to plan a meal?`);
+    checkUserId(conv);
     conv.ask(new Suggestions('yes', 'no'));
   } else {
     // If the user accepted our request, store their name in
     // the 'conv.user.storage' object for future conversations.
     conv.user.storage.userName = conv.user.name.display;
+    checkUserId(conv);
     conv.ask(`Thanks, ${conv.user.storage.userName}. ` +
       `Would you like to plan a meal?`);
     conv.ask(new Suggestions('yes', 'no'));
@@ -95,6 +86,27 @@ app.intent('Meal_Planner', (conv, {food}) => {
 
 app.intent('Meal_Planner - no', (conv) => {
   return mealSearch(conv)
+});
+
+
+
+app.intent('Meal_Planner - yes', (conv) => {
+  today = new Date();
+  log.info(userId); 
+
+  var collection = db.collection('testcollection');   
+
+  collection.insert({
+    "userId": userId,
+    "meals": [
+      {"date": today.toString(), "recipe": conv.data.foodChoice}
+    ]
+  }, function(err, response){
+    if (!err) {
+      log.info(response)
+    }
+  });
+  conv.close("I have saved this for tonights dinner. Enjoy your meal, goodbye!")
 });
 
 function mealSearch(conv, food){
@@ -131,25 +143,16 @@ function move(array, oldIndex, newIndex){
   return array;
 }
 
-app.intent('Meal_Planner - yes', (conv) => {
-  today = new Date();
-  log.info(userId); 
-
-  var collection = db.collection('testcollection');   
-
-  collection.insertOne({
-    "userId": userId,
-    "meals": [
-      {"date": today.toString(), "recipe": conv.data.foodChoice}
-    ]
-  }, function(err, response){
-    if (!err) {
-      log.info(response)
-    }
-  });
-  conv.close("I have saved this for tonights dinner. Enjoy your meal, goodbye!")
-});
-
+function checkUserId(conv){
+  if ('userId' in conv.user.storage) {
+    userId = conv.user.storage.userId;
+  } else {
+    // generateUUID is your function to generate ids.
+    userId = generateUUID();
+    conv.user.storage.userId = userId
+  }
+  log.info(conv.user.storage.userId);
+}
 
 const expressApp = express().use(bodyParser.json());
 
