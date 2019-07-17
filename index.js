@@ -17,19 +17,20 @@ const port = process.env.PORT || 4567;
 const app = dialogflow({debug: true});
 
 app.intent('Default Welcome Intent', (conv) => {
-  const name = conv.user.storage.userName;
-  if (!name) {
+  const googleName = conv.user.storage.userName;
+  log.info('Stored Name ' + googleName)
+  conv.data.food = [];
+  conv.data.count = 0
+  if (!googleName) {
     // Asks the user's permission to know their name, for personalization.
     conv.ask(new Permission({
       context: 'Hi there, to get to know you better',
       permissions: 'NAME',
     }));
   } else {
-    conv.ask(`Hi again, ${name}. Would you like to plan a meal?`);
+    conv.ask(`Hi again, ${googleName}. Would you like to plan a meal?`);
     conv.ask(new Suggestions('yes', 'no'));
   }
-  conv.data.food = [];
-  conv.data.count = 0
 });
 
 // Handle the Dialogflow intent named 'actions_intent_PERMISSION'. If user
