@@ -78,10 +78,7 @@ function mealSearch(conv, food){
     log.info('Result Returned before Conv')
     let foodChoice = []
     move(result, Math.floor(Math.random()*result.length), result.length -1);
-    log.info(result)
     foodChoice = result.pop();
-    log.info(foodChoice)
-    
     conv.ask("Would you like " + foodChoice[0]);
     log.info('After Conv')
     return 
