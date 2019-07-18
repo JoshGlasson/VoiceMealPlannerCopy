@@ -133,7 +133,10 @@ function mealSearch(conv, food){
       conv.ask(new BasicCard({
         title: conv.data.foodChoice[0],
         subtitle: conv.data.info[1],
-        text: (conv.data.info[2] === undefined ? "" : conv.data.info[2] + ". ") + (conv.data.info[3] === undefined ? "" : conv.data.info[3] + ". ") + (conv.data.info[4] === undefined ? "" : conv.data.info[4] + ". ") + (conv.data.info[5] === undefined ? "" : conv.data.info[5] + ". "),
+        text: (conv.data.info[2] === undefined ? "" : conv.data.info[2] + ". ") 
+        + (conv.data.info[3] === undefined ? "" : conv.data.info[3] + ". ") 
+        + (conv.data.info[4] === undefined ? "" : conv.data.info[4] + ". ") 
+        + (conv.data.info[5] === undefined ? "" : conv.data.info[5] + ". "), 
         image: new Image({
           url: conv.data.info[0],
           alt: "Image of food",
