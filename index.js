@@ -105,8 +105,27 @@ app.intent('Meal_Accepted', (conv) => {
     log.info("DATA " + data);
     if (data) {
       log.info("DATA")
-      conv.ask("You already have a meal for this date, would you like to replace " + data.meals[0].recipe[0])
+      return info.scrape(data.meals[0].recipe[1])
+      .then(function(foodInfo){
+        conv.ask("You already have a meal for this date, would you like to replace " + data.meals[0].recipe[0])
+        conv.ask(new BasicCard({
+          title: data.meals[0].recipe[0],
+          buttons: new Button({
+            title: 'View on Tesco Realfood',
+            url: ("https://realfood.tesco.com"+data.meals[0].recipe[1]+""),
+          }),
+          subtitle: foodInfo[1],
+          text: (foodInfo[2] === undefined ? "" : foodInfo[2] + ". ") 
+          + (foodInfo[3] === undefined ? "" : foodInfo[3] + ". ") 
+          + (foodInfo[4] === undefined ? "" : foodInfo[4] + ". ") 
+          + (foodInfo[5] === undefined ? "" : foodInfo[5] + ". "), 
+          image: new Image({
+            url: foodInfo[0],
+            alt: "Image of food",
+          }),
+        }));
       conv.ask(new Suggestions('yes', 'no'));
+      })
     } else {
       log.info("NO DATA")
       addToDb(conv)
