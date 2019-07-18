@@ -7,7 +7,8 @@ const {
         Permission,
         Suggestions,
         BasicCard,
-        Image
+        Image,
+        Button
       } = require('actions-on-google');
 
 const realFood = require('./realfoodScraper');
@@ -142,6 +143,10 @@ return info.scrape(conv.data.foodChoice[1])
     conv.ask("Would you like " + conv.data.foodChoice[0]);
     conv.ask(new BasicCard({
       title: conv.data.foodChoice[0],
+      buttons: new Button({
+        title: 'View on Tesco Realfood',
+        url: ("https://realfood.tesco.com"+conv.data.foodChoice[1]+""),
+      }),
       subtitle: conv.data.info[1],
       text: (conv.data.info[2] === undefined ? "" : conv.data.info[2] + ". ") 
       + (conv.data.info[3] === undefined ? "" : conv.data.info[3] + ". ") 
