@@ -141,11 +141,11 @@ function saveToDb(conv){
 
   var collection = db.collection('testcollection'); 
   
-  collection.updateOne(
+  collection.findOneAndUpdate(
     { "userId": userId },
-    {
-      "userId": userId,
-      "meals": [{"date": today.toString(), "recipe": conv.data.foodChoice}]
+    { $push : {
+        "meals": {"date": today.toString(), "recipe": conv.data.foodChoice}
+      }
     },
     { upsert: true },
     function(err, response){
