@@ -18,7 +18,7 @@ exports.scrape = function (link) {
       var recipeServings = $('.recipe-detail__meta li', html);
     
     for (let i = 0; i < recipePic.length; i++) {
-        productInfo.push(url+recipePic[0].attribs.src);
+        productInfo.push((url+recipePic[0].attribs.src).replace(" ", "%20"));
     }
     for (let i = 0; i < recipeIntro.length; i++) {
         productInfo.push(recipeIntro.contents()[0].data.toString().replace(/(\r\n|\n|\r|\t)/gm,''));
