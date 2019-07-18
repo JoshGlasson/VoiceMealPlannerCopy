@@ -172,25 +172,9 @@ function saveToDb(conv){
         });
     }
  }); 
-
-
-  collection.findOneAndUpdate(
-    { "userId": userId , "date": today.toDateString() },
-    { "userId": userId,
-      $push : {
-        "meals": {"date": today.toDateString(), "recipe": conv.data.foodChoice}
-      }
-    },
-    { upsert: true },
-    function(err, response){
-      if (!err) {
-        log.info(response)
-      }
-    });
 }
 
 const expressApp = express().use(bodyParser.json());
 
 expressApp.post('/api/test', app);
 expressApp.listen(port);
-
