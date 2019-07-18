@@ -5,10 +5,13 @@ const bodyParser = require('body-parser');
 const {
         dialogflow, 
         Permission,
-        Suggestions
+        Suggestions,
+        BasicCard,
+        Image
       } = require('actions-on-google');
 
 const realFood = require('./realfoodScraper');
+const info = require('./prodInfoScraper');
 const bunyan = require('bunyan');
 const log = bunyan.createLogger({name: "tmp"});
 const generateUUID = require('uuid/v4');
@@ -30,6 +33,7 @@ app.intent('Default Welcome Intent', (conv) => {
   log.info('Stored Name ' + googleName)
   conv.data.food = [];
   conv.data.foodChoice = [];
+  conv.data.info = [];
   conv.data.count = 0
 
   if (!googleName) {
@@ -122,18 +126,41 @@ function mealSearch(conv, food){
     conv.data.food = result
     move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
     conv.data.foodChoice = conv.data.food.pop();
-    conv.ask("Would you like " + conv.data.foodChoice[0]);
-    conv.ask(new Suggestions('yes', 'no'));
-    conv.data.count++
-    return 
+    return info.scrape(conv.data.foodChoice[1])
+    .then(function(foodInfo){
+      conv.data.info = foodInfo;
+      conv.ask("Would you like " + conv.data.foodChoice[0]);
+      conv.ask(new BasicCard({
+        title: conv.data.foodChoice[0],
+        subtitle: conv.data.info[1],
+        text: conv.data.info[2] + ". " + conv.data.info[3] + ". " + conv.data.info[4],
+        image: new Image({
+          url: conv.data.info[0],
+          alt: "Image of food",
+        }),
+      }));
+      conv.ask(new Suggestions('yes', 'no'));
+      conv.data.count++
+      return 
+    })
   })
   } else {
     move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
     conv.data.foodChoice = conv.data.food.pop();
-    conv.ask("Would you like " + conv.data.foodChoice[0]);
-    conv.ask(new Suggestions('yes', 'no'));
-    conv.data.count++
-    return 
+    return info.scrape(conv.data.foodChoice[1])
+    .then(function(foodInfo){
+      conv.data.info = foodInfo;
+      conv.ask("Would you like " + conv.data.foodChoice[0]);
+      conv.ask(new BasicCard({
+        title: conv.data.foodChoice[0],
+        subtitle: conv.data.info[1],
+        text: conv.data.info[2] + ".\n" + conv.data.info[3] + ".\n" + conv.data.info[4],
+        image: new Image({
+          url: conv.data.info[0],
+          alt: "Image of food",
+        }),
+      }));
+    })
   }
 }
 
