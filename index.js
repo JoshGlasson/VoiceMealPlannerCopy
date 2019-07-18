@@ -135,32 +135,36 @@ function countCheck(conv, food){
 }
 
 function mealSearch(conv){
-move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
-conv.data.foodChoice = conv.data.food.pop();
-return info.scrape(conv.data.foodChoice[1])
-  .then(function(foodInfo){
-    conv.data.info = foodInfo;
-    conv.ask("Would you like " + conv.data.foodChoice[0]);
-    conv.ask(new BasicCard({
-      title: conv.data.foodChoice[0],
-      buttons: new Button({
-        title: 'View on Tesco Realfood',
-        url: ("https://realfood.tesco.com"+conv.data.foodChoice[1]+""),
-      }),
-      subtitle: conv.data.info[1],
-      text: (conv.data.info[2] === undefined ? "" : conv.data.info[2] + ". ") 
-      + (conv.data.info[3] === undefined ? "" : conv.data.info[3] + ". ") 
-      + (conv.data.info[4] === undefined ? "" : conv.data.info[4] + ". ") 
-      + (conv.data.info[5] === undefined ? "" : conv.data.info[5] + ". "), 
-      image: new Image({
-        url: conv.data.info[0],
-        alt: "Image of food",
-      }),
-    }));
-    conv.ask(new Suggestions('yes', 'no'));
-    conv.data.count++
-    return 
-  })
+  if (conv.data.food.length > 0) {
+    move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
+    conv.data.foodChoice = conv.data.food.pop();
+    return info.scrape(conv.data.foodChoice[1])
+      .then(function(foodInfo){
+        conv.data.info = foodInfo;
+        conv.ask("Would you like " + conv.data.foodChoice[0]);
+        conv.ask(new BasicCard({
+          title: conv.data.foodChoice[0],
+          buttons: new Button({
+            title: 'View on Tesco Realfood',
+            url: ("https://realfood.tesco.com"+conv.data.foodChoice[1]+""),
+          }),
+          subtitle: conv.data.info[1],
+          text: (conv.data.info[2] === undefined ? "" : conv.data.info[2] + ". ") 
+          + (conv.data.info[3] === undefined ? "" : conv.data.info[3] + ". ") 
+          + (conv.data.info[4] === undefined ? "" : conv.data.info[4] + ". ") 
+          + (conv.data.info[5] === undefined ? "" : conv.data.info[5] + ". "), 
+          image: new Image({
+            url: conv.data.info[0],
+            alt: "Image of food",
+          }),
+        }));
+        conv.ask(new Suggestions('yes', 'no'));
+        conv.data.count++
+        return 
+      })
+  } else {
+    conv.ask("That's all the results, please search for something else");
+  }
 }
 
 function move(array, oldIndex, newIndex){
