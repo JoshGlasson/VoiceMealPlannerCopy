@@ -85,11 +85,11 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
 
 app.intent('Meal_Planner', (conv, {food}) => {
   conv.data.count = 0
-  return mealSearch(conv, food)
+  return countCheck(conv, food)
 });
 
 app.intent('Meal_Rejected', (conv) => {
-  return mealSearch(conv)
+  return countCheck(conv)
 });
 
 app.intent('Meal_Accepted', (conv) => {
@@ -119,56 +119,43 @@ app.intent('Keep_Current_Meal', (conv) => {
   conv.close("Ok, I haven't changed anything. Goodbye!")
 });
 
-function mealSearch(conv, food){
+function countCheck(conv, food){
   if (conv.data.count === 0) {
     return realFood.scrape(food)
-  .then(function(result){
-    conv.data.food = result
-    move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
-    conv.data.foodChoice = conv.data.food.pop();
-    return info.scrape(conv.data.foodChoice[1])
-    .then(function(foodInfo){
-      conv.data.info = foodInfo;
-      conv.ask("Would you like " + conv.data.foodChoice[0]);
-      conv.ask(new BasicCard({
-        title: conv.data.foodChoice[0],
-        subtitle: conv.data.info[1],
-        text: (conv.data.info[2] === undefined ? "" : conv.data.info[2] + ". ") 
-        + (conv.data.info[3] === undefined ? "" : conv.data.info[3] + ". ") 
-        + (conv.data.info[4] === undefined ? "" : conv.data.info[4] + ". ") 
-        + (conv.data.info[5] === undefined ? "" : conv.data.info[5] + ". "), 
-        image: new Image({
-          url: conv.data.info[0],
-          alt: "Image of food",
-        }),
-      }));
-      conv.ask(new Suggestions('yes', 'no'));
-      conv.data.count++
-      return 
+    .then(function(result){
+      conv.data.food = result
+      return
     })
-  })
-  } else {
-    move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
-    conv.data.foodChoice = conv.data.food.pop();
-    return info.scrape(conv.data.foodChoice[1])
-    .then(function(foodInfo){
-      conv.data.info = foodInfo;
-      conv.ask("Would you like " + conv.data.foodChoice[0]);
-      conv.ask(new BasicCard({
-        title: conv.data.foodChoice[0],
-        subtitle: conv.data.info[1],
-        text: (conv.data.info[2] === undefined ? "" : conv.data.info[2] + ". ") 
-        + (conv.data.info[3] === undefined ? "" : conv.data.info[3] + ". ") 
-        + (conv.data.info[4] === undefined ? "" : conv.data.info[4] + ". ") 
-        + (conv.data.info[5] === undefined ? "" : conv.data.info[5] + ". "),        
-        image: new Image({
-          url: conv.data.info[0],
-          alt: "Image of food",
-        }),
-      }));
-      conv.ask(new Suggestions('yes', 'no'));
+    .then(function(){
+      return mealSearch(conv)
     })
   }
+  return mealSearch(conv)
+}
+
+function mealSearch(conv){
+move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
+conv.data.foodChoice = conv.data.food.pop();
+return info.scrape(conv.data.foodChoice[1])
+  .then(function(foodInfo){
+    conv.data.info = foodInfo;
+    conv.ask("Would you like " + conv.data.foodChoice[0]);
+    conv.ask(new BasicCard({
+      title: conv.data.foodChoice[0],
+      subtitle: conv.data.info[1],
+      text: (conv.data.info[2] === undefined ? "" : conv.data.info[2] + ". ") 
+      + (conv.data.info[3] === undefined ? "" : conv.data.info[3] + ". ") 
+      + (conv.data.info[4] === undefined ? "" : conv.data.info[4] + ". ") 
+      + (conv.data.info[5] === undefined ? "" : conv.data.info[5] + ". "), 
+      image: new Image({
+        url: conv.data.info[0],
+        alt: "Image of food",
+      }),
+    }));
+    conv.ask(new Suggestions('yes', 'no'));
+    conv.data.count++
+    return 
+  })
 }
 
 function move(array, oldIndex, newIndex){
