@@ -111,6 +111,10 @@ app.intent('Replace_Current_Meal', (conv) => {
   conv.close("I updated your meal choice. I hope its delicious, goodbye!")
 });
 
+app.intent('Keep_Current_Meal', (conv) => {
+  conv.close("Ok, I haven't changed anything. Goodbye!")
+});
+
 function mealSearch(conv, food){
   if (conv.data.count === 0) {
     return realFood.scrape(food)
