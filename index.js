@@ -94,7 +94,7 @@ app.intent('Meal_Rejected', (conv) => {
 
 app.intent('Meal_Accepted', (conv) => {
   today = new Date(); 
-  var collection = db.collection('testcollection'); 
+  collection = db.collection('testcollection'); 
   return collection.findOne({ "userId": userId , "meals.date": today.toDateString() })
   .then(function(data) {
     log.info("DATA " + data);
@@ -189,7 +189,6 @@ function checkUserId(conv){
 }
 
 function updateRecipeInDb(conv){
-  var collection = db.collection('testcollection'); 
   collection.updateOne(
     { "userId": userId , "meals.date": today.toDateString() },
     { $set: { "meals.$.recipe": conv.data.foodChoice} },
@@ -202,7 +201,6 @@ function updateRecipeInDb(conv){
 }
 
 function addToDb(conv){
-  var collection = db.collection('testcollection'); 
   collection.findOneAndUpdate(
     { "userId": userId },
     { $push : {
