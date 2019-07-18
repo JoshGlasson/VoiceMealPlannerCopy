@@ -141,10 +141,44 @@ function saveToDb(conv){
 
   var collection = db.collection('testcollection'); 
   
+  collection.findOne({ "userId": userId , "meals.date": today.toDateString() }, function(err, data) {
+    if(err) {
+       log.info(err);
+    }
+    if (data) {
+      log.info("DATA");
+      collection.updateOne(
+        { "userId": userId , "meals.date": today.toDateString() },
+        { $set: { "meals.$.recipe": conv.data.foodChoice} },
+        { upsert: true },
+        function(err, response){
+          if (!err) {
+            log.info(response)
+          }
+        });
+    } else {
+      log.info("NO DATA");
+      collection.findOneAndUpdate(
+        { "userId": userId },
+        { $push : {
+            "meals": {"date": today.toDateString(), "recipe": conv.data.foodChoice}
+          }
+        },
+        { upsert: true },
+        function(err, response){
+          if (!err) {
+            log.info(response)
+          }
+        });
+    }
+ }); 
+
+
   collection.findOneAndUpdate(
-    { "userId": userId },
-    { $push : {
-        "meals": {"date": today.toString(), "recipe": conv.data.foodChoice}
+    { "userId": userId , "date": today.toDateString() },
+    { "userId": userId,
+      $push : {
+        "meals": {"date": today.toDateString(), "recipe": conv.data.foodChoice}
       }
     },
     { upsert: true },
@@ -159,3 +193,4 @@ const expressApp = express().use(bodyParser.json());
 
 expressApp.post('/api/test', app);
 expressApp.listen(port);
+
