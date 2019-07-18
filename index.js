@@ -84,34 +84,50 @@ app.intent('Meal_Planner', (conv, {food}) => {
   return mealSearch(conv, food)
 });
 
-app.intent('Meal_Planner - no', (conv) => {
+app.intent('Meal_Rejected', (conv) => {
   return mealSearch(conv)
 });
 
+app.intent('Meal_Accepted', (conv) => {
+  today = new Date(); 
+  var collection = db.collection('testcollection'); 
+  return collection.findOne({ "userId": userId , "meals.date": today.toDateString() })
+  .then(function(data) {
+    log.info("DATA " + data);
+    if (data) {
+      log.info("DATA")
+      conv.ask("You already have a meal for this date, would you like to replace " + data.meals[0].recipe[0])
+      conv.ask(new Suggestions('yes', 'no'));
+    } else {
+      log.info("NO DATA")
+      addToDb(conv)
+      conv.close("I have saved this for tonights dinner. Enjoy your meal, goodbye!")
+    }
+ })
+});
 
-
-app.intent('Meal_Planner - yes', (conv) => {
-  saveToDb(conv);
-  conv.close("I have saved this for tonights dinner. Enjoy your meal, goodbye!")
+app.intent('Replace_Current_Meal', (conv) => {
+  updateRecipeInDb(conv);
+  conv.close("I updated your meal choice. I hope its delicious, goodbye!")
 });
 
 function mealSearch(conv, food){
   if (conv.data.count === 0) {
-    log.info('Count 0')
     return realFood.scrape(food)
   .then(function(result){
     conv.data.food = result
     move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
     conv.data.foodChoice = conv.data.food.pop();
     conv.ask("Would you like " + conv.data.foodChoice[0]);
+    conv.ask(new Suggestions('yes', 'no'));
     conv.data.count++
     return 
   })
   } else {
-    log.info('Count more than 0')
     move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
     conv.data.foodChoice = conv.data.food.pop();
     conv.ask("Would you like " + conv.data.foodChoice[0]);
+    conv.ask(new Suggestions('yes', 'no'));
     conv.data.count++
     return 
   }
@@ -132,46 +148,35 @@ function checkUserId(conv){
     userId = generateUUID();
     conv.user.storage.userId = userId
   }
-  log.info(conv.user.storage.userId);
 }
 
-function saveToDb(conv){
-  today = new Date();
-  log.info(userId); 
-
+function updateRecipeInDb(conv){
   var collection = db.collection('testcollection'); 
-  
-  collection.findOne({ "userId": userId , "meals.date": today.toDateString() }, function(err, data) {
-    if(err) {
-       log.info(err);
-    }
-    if (data) {
-      log.info("DATA");
-      collection.updateOne(
-        { "userId": userId , "meals.date": today.toDateString() },
-        { $set: { "meals.$.recipe": conv.data.foodChoice} },
-        { upsert: true },
-        function(err, response){
-          if (!err) {
-            log.info(response)
-          }
-        });
-    } else {
-      log.info("NO DATA");
-      collection.findOneAndUpdate(
-        { "userId": userId },
-        { $push : {
-            "meals": {"date": today.toDateString(), "recipe": conv.data.foodChoice}
-          }
-        },
-        { upsert: true },
-        function(err, response){
-          if (!err) {
-            log.info(response)
-          }
-        });
-    }
- }); 
+  collection.updateOne(
+    { "userId": userId , "meals.date": today.toDateString() },
+    { $set: { "meals.$.recipe": conv.data.foodChoice} },
+    { upsert: true },
+    function(err, response){
+      if (!err) {
+        log.info("UPDATE " + response)
+      }
+  });
+}
+
+function addToDb(conv){
+  var collection = db.collection('testcollection'); 
+  collection.findOneAndUpdate(
+    { "userId": userId },
+    { $push : {
+        "meals": {"date": today.toDateString(), "recipe": conv.data.foodChoice}
+      }
+    },
+    { upsert: true },
+    function(err, response){
+      if (!err) {
+        log.info("ADD "+ response)
+      }
+    });
 }
 
 const expressApp = express().use(bodyParser.json());
