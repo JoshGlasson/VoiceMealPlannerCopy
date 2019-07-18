@@ -85,8 +85,12 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
 });
 
 app.intent('Meal_Planner', (conv, {food}) => {
-  conv.data.count = 0
-  return countCheck(conv, food)
+  if(food === 'no') {
+    return countCheck(conv)
+  } else {
+    conv.data.count = 0
+    return countCheck(conv, food)
+  }
 });
 
 app.intent('Meal_Rejected', (conv) => {
@@ -125,13 +129,16 @@ function countCheck(conv, food){
     return realFood.scrape(food)
     .then(function(result){
       conv.data.food = result
+      log.info("COUNT 0" + conv.data.food.length)
       return
     })
     .then(function(){
       return mealSearch(conv)
     })
+  } else {
+    log.info("COUNT > 0" + conv.data.food.length)
+    return mealSearch(conv)
   }
-  return mealSearch(conv)
 }
 
 function mealSearch(conv){
