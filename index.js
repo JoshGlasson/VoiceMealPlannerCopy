@@ -91,36 +91,19 @@ app.intent('Meal_Planner - no', (conv) => {
 
 
 app.intent('Meal_Planner - yes', (conv) => {
-  today = new Date();
-  log.info(userId); 
-
-  var collection = db.collection('testcollection');   
-
-  collection.insert({
-    "userId": userId,
-    "meals": [
-      {"date": today.toString(), "recipe": conv.data.foodChoice}
-    ]
-  }, function(err, response){
-    if (!err) {
-      log.info(response)
-    }
-  });
+  saveToDb(conv);
   conv.close("I have saved this for tonights dinner. Enjoy your meal, goodbye!")
 });
 
 function mealSearch(conv, food){
-  log.info('Start')
   if (conv.data.count === 0) {
     log.info('Count 0')
     return realFood.scrape(food)
   .then(function(result){
-    log.info('Result Returned before Conv')
     conv.data.food = result
     move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
     conv.data.foodChoice = conv.data.food.pop();
     conv.ask("Would you like " + conv.data.foodChoice[0]);
-    log.info('After Conv')
     conv.data.count++
     return 
   })
@@ -129,7 +112,6 @@ function mealSearch(conv, food){
     move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
     conv.data.foodChoice = conv.data.food.pop();
     conv.ask("Would you like " + conv.data.foodChoice[0]);
-    log.info('After Conv')
     conv.data.count++
     return 
   }
@@ -147,11 +129,30 @@ function checkUserId(conv){
   if ('userId' in conv.user.storage) {
     userId = conv.user.storage.userId;
   } else {
-    // generateUUID is your function to generate ids.
     userId = generateUUID();
     conv.user.storage.userId = userId
   }
   log.info(conv.user.storage.userId);
+}
+
+function saveToDb(conv){
+  today = new Date();
+  log.info(userId); 
+
+  var collection = db.collection('testcollection'); 
+  
+  collection.updateOne(
+    { "userId": userId },
+    {
+      "userId": userId,
+      "meals": [{"date": today.toString(), "recipe": conv.data.foodChoice}]
+    },
+    { upsert: true },
+    function(err, response){
+      if (!err) {
+        log.info(response)
+      }
+    });
 }
 
 const expressApp = express().use(bodyParser.json());
