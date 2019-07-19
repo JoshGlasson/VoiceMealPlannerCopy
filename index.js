@@ -30,11 +30,10 @@ app.intent('Default Welcome Intent', (conv) => {
   conv.data.food = [];
   conv.data.foodChoice = [];
   conv.data.info = [];
-  conv.data.count = 0
-  conv.data.date = new Date()
+  conv.data.count = 0;
+  conv.data.date = new Date().toString();
 
   if (!googleName) {
-    // Asks the user's permission to know their name, for personalization.
     conv.ask(new Permission({
       context: 'Hi there, to get to know you better',
       permissions: 'NAME',
@@ -46,17 +45,12 @@ app.intent('Default Welcome Intent', (conv) => {
   }
 });
 
-// Handle the Dialogflow intent named 'actions_intent_PERMISSION'. If user
-// agreed to PERMISSION prompt, then boolean value 'permissionGranted' is true.
 app.intent('actions_intent_PERMISSION', (conv, params, permissionGranted) => {
   if (!permissionGranted) {
-    // If the user denied our request, go ahead with the conversation.
     conv.ask(`OK, no worries. Would you like to plan a meal?`);
     userId = helpers.checkUserId(conv, userId);
     conv.ask(new Suggestions('yes', 'no'));
   } else {
-    // If the user accepted our request, store their name in
-    // the 'conv.user.storage' object for future conversations.
     conv.user.storage.userName = conv.user.name.display;
     userId = helpers.checkUserId(conv, userId);
     conv.ask(`Thanks, ${conv.user.storage.userName}. ` +
@@ -65,10 +59,7 @@ app.intent('actions_intent_PERMISSION', (conv, params, permissionGranted) => {
   }
 });
 
-// Handle the Dialogflow NO_INPUT intent.
-// Triggered when the user doesn't provide input to the Action
 app.intent('actions_intent_NO_INPUT', (conv) => {
-  // Use the number of reprompts to vary response
   const repromptCount = parseInt(conv.arguments.get('REPROMPT_COUNT'));
   if (repromptCount === 0) {
     conv.ask('What would you like to eat?');
@@ -80,14 +71,14 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
   }
 });
 
-app.intent('Meal_Planner', (conv, {food, food1, no}) => {
-  if(no) {
-    return countCheck(conv)
-  } else {
-    log.info("Count Reset")
-    conv.data.count = 0
-    return countCheck(conv, food, food1)
+app.intent('Meal_Planner', (conv, {food, food1, date}) => {
+  log.info("Count Reset")
+  conv.data.count = 0
+  log.info("DATE FORMAT? " + date)
+  if(date){
+    conv.data.date = date
   }
+  return countCheck(conv, food, food1)
 });
 
 app.intent('Meal_Rejected', (conv) => {
@@ -95,14 +86,14 @@ app.intent('Meal_Rejected', (conv) => {
 });
 
 app.intent('Meal_Accepted', (conv) => {
-  let today = new Date(conv.data.date); 
+  let date = new Date(conv.data.date); 
   let dbFood = [];
-  return dbutils.isMeal(conv, userId, today)
+  return dbutils.isMeal(conv, userId, date)
   .then(function(data) {
     if (data) {
       for (let i = 0; i < data.meals.length; i++) {
         log.info("started for loop")
-        if(data.meals[i].date === today.toDateString()){
+        if(data.meals[i].date === date.toDateString()){
           dbFood = data.meals[i].recipe
           break
         }
@@ -135,39 +126,15 @@ app.intent('Meal_Accepted', (conv) => {
         }));
       conv.ask(new Suggestions('yes', 'no'));
       })
-
-  // let today = new Date(); 
-  // return dbutils.isMeal(conv, userId, today)
-  // .then(function(data) {
-  //   if(data) {
-  //     conv.ask("You already have a meal for this date, would you like to replace " + data.meals[0].recipe[0])
-  //     conv.ask(new Suggestions('yes', 'no'))
-  //     // return
     } else {
-      dbutils.addToDb(conv, userId, today)
+      dbutils.addToDb(conv, userId, date)
       conv.close("I have saved this for tonights dinner. Enjoy your meal, goodbye!")
-      // return
   }});
- 
-  // var collection = db.collection('testcollection'); 
-//   return collection.findOne({ "userId": userId , "meals.date": today.toDateString() })
-//   .then(function(data) {
-//     log.info("DATA " + data);
-//     if (data) {
-//       log.info("DATA")
-//       conv.ask("You already have a meal for this date, would you like to replace " + data.meals[0].recipe[0])
-//       conv.ask(new Suggestions('yes', 'no'));
-//     } else {
-//       log.info("NO DATA")
-//       dbutils.addToDb(conv, userId, today)
-//       conv.close("I have saved this for tonights dinner. Enjoy your meal, goodbye!")
-//     }
-//  })
 });
 
 app.intent('Replace_Current_Meal', (conv) => {
-  let today = new Date(); 
-  dbutils.updateRecipeInDb(conv, userId, today);
+  let date = new Date(conv.data.date); 
+  dbutils.updateRecipeInDb(conv, userId, date);
   conv.close("I updated your meal choice. I hope its delicious, goodbye!")
 });
 
