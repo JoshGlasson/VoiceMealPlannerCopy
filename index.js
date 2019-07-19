@@ -1,7 +1,6 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-console */
 const express = require('express');
 const bodyParser = require('body-parser');
+
 const {
         dialogflow, 
         Permission,
@@ -13,23 +12,17 @@ const {
         BrowseCarouselItem
       } = require('actions-on-google');
 
+const helpers = require('./helpers');
+const dbutils = require('./dbutils');
 const realFood = require('./realfoodScraper');
 const info = require('./prodInfoScraper');
 const bunyan = require('bunyan');
 const log = bunyan.createLogger({name: "tmp"});
-const generateUUID = require('uuid/v4');
 let userId = null;
 
 const port = process.env.PORT || 4567;
 
 const app = dialogflow({debug: true});
-
-var mongoClient = require("mongodb").MongoClient;
-var db = {};
-
-mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw%3D%3D@tmptest.documents.azure.com:10255/?ssl=true", { useNewUrlParser: true },function (err, client) {
-  db = client.db("testdatabase");  
-});
 
 app.intent('Default Welcome Intent', (conv) => {
   const googleName = conv.user.storage.userName;
@@ -38,6 +31,7 @@ app.intent('Default Welcome Intent', (conv) => {
   conv.data.foodChoice = [];
   conv.data.info = [];
   conv.data.count = 0
+  conv.data.date = new Date()
 
   if (!googleName) {
     // Asks the user's permission to know their name, for personalization.
@@ -46,7 +40,7 @@ app.intent('Default Welcome Intent', (conv) => {
       permissions: 'NAME',
     }));
   } else {
-    checkUserId(conv);
+    userId = helpers.checkUserId(conv, userId);
     conv.ask(`Hi again, ${googleName}. Would you like to plan a meal?`);
     conv.ask(new Suggestions('yes', 'no'));
   }
@@ -58,13 +52,13 @@ app.intent('actions_intent_PERMISSION', (conv, params, permissionGranted) => {
   if (!permissionGranted) {
     // If the user denied our request, go ahead with the conversation.
     conv.ask(`OK, no worries. Would you like to plan a meal?`);
-    checkUserId(conv);
+    userId = helpers.checkUserId(conv, userId);
     conv.ask(new Suggestions('yes', 'no'));
   } else {
     // If the user accepted our request, store their name in
     // the 'conv.user.storage' object for future conversations.
     conv.user.storage.userName = conv.user.name.display;
-    checkUserId(conv);
+    userId = helpers.checkUserId(conv, userId);
     conv.ask(`Thanks, ${conv.user.storage.userName}. ` +
       `Would you like to plan a meal?`);
     conv.ask(new Suggestions('yes', 'no'));
@@ -101,9 +95,9 @@ app.intent('Meal_Rejected', (conv) => {
 });
 
 app.intent('Meal_Accepted', (conv) => {
-  today = new Date(); 
-  collection = db.collection('testcollection'); 
-  return collection.findOne({ "userId": userId , "meals.date": today.toDateString() })
+
+  today = conv.data.date; 
+  return dbutils.isMeal(conv, userId, today)
   .then(function(data) {
     if (data) {
       for (let i = 0; i < data.meals.length; i++) {
@@ -141,16 +135,39 @@ app.intent('Meal_Accepted', (conv) => {
         }));
       conv.ask(new Suggestions('yes', 'no'));
       })
+
+  // let today = new Date(); 
+  // return dbutils.isMeal(conv, userId, today)
+  // .then(function(data) {
+  //   if(data) {
+  //     conv.ask("You already have a meal for this date, would you like to replace " + data.meals[0].recipe[0])
+  //     conv.ask(new Suggestions('yes', 'no'))
+  //     // return
     } else {
-      log.info("NO DATA")
-      addToDb(conv)
+      dbutils.addToDb(conv, userId, today)
       conv.close("I have saved this for tonights dinner. Enjoy your meal, goodbye!")
-    }
- })
+      // return
+  }});
+ 
+  // var collection = db.collection('testcollection'); 
+//   return collection.findOne({ "userId": userId , "meals.date": today.toDateString() })
+//   .then(function(data) {
+//     log.info("DATA " + data);
+//     if (data) {
+//       log.info("DATA")
+//       conv.ask("You already have a meal for this date, would you like to replace " + data.meals[0].recipe[0])
+//       conv.ask(new Suggestions('yes', 'no'));
+//     } else {
+//       log.info("NO DATA")
+//       dbutils.addToDb(conv, userId, today)
+//       conv.close("I have saved this for tonights dinner. Enjoy your meal, goodbye!")
+//     }
+//  })
 });
 
 app.intent('Replace_Current_Meal', (conv) => {
-  updateRecipeInDb(conv);
+  let today = new Date(); 
+  dbutils.updateRecipeInDb(conv, userId, today);
   conv.close("I updated your meal choice. I hope its delicious, goodbye!")
 });
 
@@ -177,7 +194,8 @@ function countCheck(conv, food, food1){
 
 function mealSearch(conv){
   if (conv.data.food.length > 0) {
-    move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
+    helpers.move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
+
     conv.data.foodChoice = conv.data.food.pop();
     return info.scrape(conv.data.foodChoice[1])
       .then(function(foodInfo){
@@ -208,51 +226,9 @@ function mealSearch(conv){
   }
 }
 
-function move(array, oldIndex, newIndex){
-  if(newIndex >= array.length) {
-    newIndex = array.length - 1;
-  }
-  array.splice(newIndex,0,array.splice(oldIndex, 1)[0])
-  return array;
-}
-
-function checkUserId(conv){
-  if ('userId' in conv.user.storage) {
-    userId = conv.user.storage.userId;
-  } else {
-    userId = generateUUID();
-    conv.user.storage.userId = userId
-  }
-}
-
-function updateRecipeInDb(conv){
-  collection.updateOne(
-    { "userId": userId , "meals.date": today.toDateString() },
-    { $set: { "meals.$.recipe": conv.data.foodChoice} },
-    { upsert: true },
-    function(err, response){
-      if (!err) {
-        log.info("UPDATE " + response)
-      }
-  });
-}
-
-function addToDb(conv){
-  collection.findOneAndUpdate(
-    { "userId": userId },
-    { $push : {
-        "meals": {"date": today.toDateString(), "recipe": conv.data.foodChoice}
-      }
-    },
-    { upsert: true },
-    function(err, response){
-      if (!err) {
-        log.info("ADD "+ response)
-      }
-    });
-}
-
 const expressApp = express().use(bodyParser.json());
 
 expressApp.post('/api/test', app);
 expressApp.listen(port);
+
+module.exports = {}
