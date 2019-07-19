@@ -95,7 +95,7 @@ app.intent('Meal_Accepted', (conv) => {
 app.intent('Replace_Current_Meal', (conv) => {
   let date = conv.data.date; 
   dbutils.updateRecipeInDb(conv, userId, date);
-  conv.close("I updated your meal choice. I hope its delicious, goodbye!")
+  conv.close("I updated your meal choice for "+new Date(date).toDateString()+". I hope its delicious, goodbye!")
 });
 
 app.intent('Keep_Current_Meal', (conv) => {
@@ -161,7 +161,7 @@ function replaceCheck(conv, date){
       conv.ask(new Suggestions('yes', 'no'))})  
     } else {
       dbutils.addToDb(conv, userId, date)
-      conv.close("I have saved this for tonights dinner. Enjoy your meal, goodbye!")
+      conv.close("I have saved this for dinner on "+new Date(date).toDateString()+". Enjoy your meal, goodbye!")
   }
 })}
 
