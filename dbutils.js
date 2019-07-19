@@ -11,7 +11,7 @@ exports.updateRecipeInDb = function (conv, userId, date){
   var collection = db.collection('testcollection'); 
 
   collection.updateOne(
-    { "userId": userId , "meals.date": date.toDateString() },
+    { "userId": userId , "meals.date": new Date(date).toDateString() },
     { $set: { "meals.$.recipe": conv.data.foodChoice} },
     { upsert: true },
     function(err, response){
@@ -27,7 +27,7 @@ exports.addToDb = function (conv, userId, date){
   collection.findOneAndUpdate(
     { "userId": userId },
     { $push : {
-        "meals": {"date": date.toDateString(), "recipe": conv.data.foodChoice}
+        "meals": {"date": new Date(date).toDateString(), "recipe": conv.data.foodChoice}
       }
     },
     { upsert: true },
@@ -41,7 +41,7 @@ exports.addToDb = function (conv, userId, date){
 exports.isMeal = function (conv, userId, date){
   var collection = db.collection('testcollection'); 
 
-  return collection.findOne({ "userId": userId , "meals.date": date.toDateString() })
+  return collection.findOne({ "userId": userId , "meals.date": new Date(date).toDateString() })
   .then(function(data) {
     if (data) {
       return data;

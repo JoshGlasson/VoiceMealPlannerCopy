@@ -31,7 +31,8 @@ app.intent('Default Welcome Intent', (conv) => {
   conv.data.foodChoice = [];
   conv.data.info = [];
   conv.data.count = 0;
-  conv.data.date = new Date().toString();
+  conv.data.date = false;
+  conv.data.mealData = {};
 
   if (!googleName) {
     conv.ask(new Permission({
@@ -86,14 +87,55 @@ app.intent('Meal_Rejected', (conv) => {
 });
 
 app.intent('Meal_Accepted', (conv) => {
-  let date = new Date(conv.data.date); 
-  let dbFood = [];
+  if(!conv.data.date){
+    conv.ask("What day do you want this meal on?")
+  } else {
+    return replaceCheck(conv, conv.data.date)
+  }
+});
+
+app.intent('Replace_Current_Meal', (conv) => {
+  let date = conv.data.date; 
+  dbutils.updateRecipeInDb(conv, userId, date);
+  conv.close("I updated your meal choice. I hope its delicious, goodbye!")
+});
+
+app.intent('Keep_Current_Meal', (conv) => {
+  conv.close("Ok, I haven't changed anything. Goodbye!")
+});
+
+app.intent('Set_Date', (conv, date) => {
+  conv.data.date = date;
+  return replaceCheck(conv, conv.data.date)
+});
+
+function countCheck(conv, food, food1){
+  if (conv.data.count === 0) {
+    return realFood.scrape(food+"%20"+food1)
+    .then(function(result){
+      conv.data.food = result
+      log.info("COUNT 0" + conv.data.food.length)
+      return
+    })
+    .then(function(){
+      return mealSearch(conv)
+    })
+  } else {
+    log.info("COUNT > 0" + conv.data.food.length)
+    return mealSearch(conv)
+  }
+}
+
+function replaceCheck(conv, date){
+  let dbFood = []; 
   return dbutils.isMeal(conv, userId, date)
   .then(function(data) {
     if (data) {
       for (let i = 0; i < data.meals.length; i++) {
         log.info("started for loop")
-        if(data.meals[i].date === date.toDateString()){
+        log.info(data.meals[i].date)
+        log.info(new Date(date))
+        if(data.meals[i].date === (new Date(conv.data.date).toDateString())){
           dbFood = data.meals[i].recipe
           break
         }
@@ -124,40 +166,12 @@ app.intent('Meal_Accepted', (conv) => {
             }),
           ],
         }));
-      conv.ask(new Suggestions('yes', 'no'));
-      })
+      conv.ask(new Suggestions('yes', 'no'))})  
     } else {
       dbutils.addToDb(conv, userId, date)
       conv.close("I have saved this for tonights dinner. Enjoy your meal, goodbye!")
-  }});
-});
-
-app.intent('Replace_Current_Meal', (conv) => {
-  let date = new Date(conv.data.date); 
-  dbutils.updateRecipeInDb(conv, userId, date);
-  conv.close("I updated your meal choice. I hope its delicious, goodbye!")
-});
-
-app.intent('Keep_Current_Meal', (conv) => {
-  conv.close("Ok, I haven't changed anything. Goodbye!")
-});
-
-function countCheck(conv, food, food1){
-  if (conv.data.count === 0) {
-    return realFood.scrape(food+"%20"+food1)
-    .then(function(result){
-      conv.data.food = result
-      log.info("COUNT 0" + conv.data.food.length)
-      return
-    })
-    .then(function(){
-      return mealSearch(conv)
-    })
-  } else {
-    log.info("COUNT > 0" + conv.data.food.length)
-    return mealSearch(conv)
   }
-}
+})}
 
 function mealSearch(conv){
   if (conv.data.food.length > 0) {
