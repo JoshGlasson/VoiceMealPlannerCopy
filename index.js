@@ -86,13 +86,13 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
   }
 });
 
-app.intent('Meal_Planner', (conv, {food}) => {
+app.intent('Meal_Planner', (conv, {food, food1}) => {
   if(food === 'no') {
     return countCheck(conv)
   } else {
     log.info("Count Reset")
     conv.data.count = 0
-    return countCheck(conv, food)
+    return countCheck(conv, food, food1)
   }
 });
 
@@ -158,9 +158,9 @@ app.intent('Keep_Current_Meal', (conv) => {
   conv.close("Ok, I haven't changed anything. Goodbye!")
 });
 
-function countCheck(conv, food){
+function countCheck(conv, food, food1){
   if (conv.data.count === 0) {
-    return realFood.scrape(food)
+    return realFood.scrape(food+"%20"+food1)
     .then(function(result){
       conv.data.food = result
       log.info("COUNT 0" + conv.data.food.length)
