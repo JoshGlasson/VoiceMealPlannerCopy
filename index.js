@@ -86,8 +86,8 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
   }
 });
 
-app.intent('Meal_Planner', (conv, {food, food1}) => {
-  if(food === 'no') {
+app.intent('Meal_Planner', (conv, {food, food1, no}) => {
+  if(no) {
     return countCheck(conv)
   } else {
     log.info("Count Reset")
