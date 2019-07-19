@@ -8,7 +8,9 @@ const {
         Suggestions,
         BasicCard,
         Image,
-        Button
+        Button,
+        BrowseCarousel,
+        BrowseCarouselItem
       } = require('actions-on-google');
 
 const realFood = require('./realfoodScraper');
@@ -88,6 +90,7 @@ app.intent('Meal_Planner', (conv, {food}) => {
   if(food === 'no') {
     return countCheck(conv)
   } else {
+    log.info("Count Reset")
     conv.data.count = 0
     return countCheck(conv, food)
   }
@@ -102,27 +105,39 @@ app.intent('Meal_Accepted', (conv) => {
   collection = db.collection('testcollection'); 
   return collection.findOne({ "userId": userId , "meals.date": today.toDateString() })
   .then(function(data) {
-    log.info("DATA " + data);
     if (data) {
-      log.info("DATA")
-      return info.scrape(data.meals[0].recipe[1])
+      for (let i = 0; i < data.meals.length; i++) {
+        log.info("started for loop")
+        if(data.meals[i].date === today.toDateString()){
+          dbFood = data.meals[i].recipe
+          break
+        }
+      }
+      log.info("dbFood" + dbFood)
+      return info.scrape(dbFood[1])
       .then(function(foodInfo){
-        conv.ask("You already have a meal for this date, would you like to replace " + data.meals[0].recipe[0])
-        conv.ask(new BasicCard({
-          title: data.meals[0].recipe[0],
-          buttons: new Button({
-            title: 'View on Tesco Realfood',
-            url: ("https://realfood.tesco.com"+data.meals[0].recipe[1]+""),
-          }),
-          subtitle: foodInfo[1],
-          text: (foodInfo[2] === undefined ? "" : foodInfo[2] + ". ") 
-          + (foodInfo[3] === undefined ? "" : foodInfo[3] + ". ") 
-          + (foodInfo[4] === undefined ? "" : foodInfo[4] + ". ") 
-          + (foodInfo[5] === undefined ? "" : foodInfo[5] + ". "), 
-          image: new Image({
-            url: foodInfo[0],
-            alt: "Image of food",
-          }),
+        log.info("scrape done")
+        log.info("DATA after scrape" + data.meals)
+        conv.ask("You already have a meal for this date, would you like to replace " + dbFood[0])
+        conv.ask(new BrowseCarousel({
+          items: [
+            new BrowseCarouselItem({
+              title: dbFood[0],
+              url: ("https://realfood.tesco.com"+dbFood[1]+""),
+              image: new Image({
+                url: foodInfo[0],
+                alt: 'Image of '+dbFood[0]+"",
+              }),
+            }),
+            new BrowseCarouselItem({
+              title: conv.data.foodChoice[0],
+              url: ("https://realfood.tesco.com"+conv.data.foodChoice[1]+""),
+              image: new Image({
+                url: conv.data.info[0],
+                alt: 'Image of '+conv.data.foodChoice[0]+"",
+              }),
+            }),
+          ],
         }));
       conv.ask(new Suggestions('yes', 'no'));
       })
@@ -241,3 +256,27 @@ const expressApp = express().use(bodyParser.json());
 
 expressApp.post('/api/test', app);
 expressApp.listen(port);
+
+
+// CAROUSEL EXAMPLE, TRY TOMORROW
+
+// conv.ask(new BrowseCarousel({
+//   items: [
+//     new BrowseCarouselItem({
+//       title: data.meals[0].recipe[0],
+//       url: ("https://realfood.tesco.com"+data.meals[0].recipe[1]+""),
+//       image: new Image({
+//         url: foodInfo[0],
+//         alt: 'Image of '+data.meals[0].recipe[0]+"",
+//       }),
+//     }),
+//     new BrowseCarouselItem({
+//       title: conv.data.foodChoice[0],
+//       url: ("https://realfood.tesco.com"+conv.data.foodChoice[1]+""),
+//       image: new Image({
+//         url: conv.data.info[0],
+//         alt: 'Image of '+conv.data.foodChoice[0]+"",
+//       }),
+//     }),
+//   ],
+// }));
