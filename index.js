@@ -73,9 +73,7 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
 });
 
 app.intent('Meal_Planner', (conv, {food, food1, date}) => {
-  log.info("Count Reset")
   conv.data.count = 0
-  log.info("DATE FORMAT? " + date)
   if(date){
     conv.data.date = date
   }
@@ -104,9 +102,9 @@ app.intent('Keep_Current_Meal', (conv) => {
   conv.close("Ok, I haven't changed anything. Goodbye!")
 });
 
-app.intent('Set_Date', (conv, date) => {
+app.intent('Set_Date', (conv, {date}) => {
   conv.data.date = date;
-  return replaceCheck(conv, conv.data.date)
+  return replaceCheck(conv, date)
 });
 
 function countCheck(conv, food, food1){
@@ -132,19 +130,13 @@ function replaceCheck(conv, date){
   .then(function(data) {
     if (data) {
       for (let i = 0; i < data.meals.length; i++) {
-        log.info("started for loop")
-        log.info(data.meals[i].date)
-        log.info(new Date(date))
         if(data.meals[i].date === (new Date(conv.data.date).toDateString())){
           dbFood = data.meals[i].recipe
           break
         }
       }
-      log.info("dbFood" + dbFood)
       return info.scrape(dbFood[1])
       .then(function(foodInfo){
-        log.info("scrape done")
-        log.info("DATA after scrape" + data.meals)
         conv.ask("You already have a meal for this date, would you like to replace " + dbFood[0] + " with " + conv.data.foodChoice[0] + "?")
         conv.ask(new BrowseCarousel({
           items: [
