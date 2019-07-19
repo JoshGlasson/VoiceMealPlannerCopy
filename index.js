@@ -118,7 +118,7 @@ app.intent('Meal_Accepted', (conv) => {
       .then(function(foodInfo){
         log.info("scrape done")
         log.info("DATA after scrape" + data.meals)
-        conv.ask("You already have a meal for this date, would you like to replace " + dbFood[0])
+        conv.ask("You already have a meal for this date, would you like to replace " + dbFood[0] + " with " + conv.data.foodChoice[0] + "?")
         conv.ask(new BrowseCarousel({
           items: [
             new BrowseCarouselItem({
@@ -256,27 +256,3 @@ const expressApp = express().use(bodyParser.json());
 
 expressApp.post('/api/test', app);
 expressApp.listen(port);
-
-
-// CAROUSEL EXAMPLE, TRY TOMORROW
-
-// conv.ask(new BrowseCarousel({
-//   items: [
-//     new BrowseCarouselItem({
-//       title: data.meals[0].recipe[0],
-//       url: ("https://realfood.tesco.com"+data.meals[0].recipe[1]+""),
-//       image: new Image({
-//         url: foodInfo[0],
-//         alt: 'Image of '+data.meals[0].recipe[0]+"",
-//       }),
-//     }),
-//     new BrowseCarouselItem({
-//       title: conv.data.foodChoice[0],
-//       url: ("https://realfood.tesco.com"+conv.data.foodChoice[1]+""),
-//       image: new Image({
-//         url: conv.data.info[0],
-//         alt: 'Image of '+conv.data.foodChoice[0]+"",
-//       }),
-//     }),
-//   ],
-// }));
