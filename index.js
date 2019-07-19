@@ -95,8 +95,8 @@ app.intent('Meal_Rejected', (conv) => {
 });
 
 app.intent('Meal_Accepted', (conv) => {
-
-  today = conv.data.date; 
+  let today = new Date(conv.data.date); 
+  let dbFood = [];
   return dbutils.isMeal(conv, userId, today)
   .then(function(data) {
     if (data) {
