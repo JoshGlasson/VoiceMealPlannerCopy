@@ -63,3 +63,24 @@ exports.nutritionScrape = function (link) {
       return nutriInfo;
     })
 };
+
+exports.ingredientsScrape = function (link) {
+  log.info('Start Scrape')
+  var ingredients = []
+  var website = url+link
+  return rp(website)
+    .then(function(html){
+      log.info('Add to Array')
+      var recipeIngredients = $(".recipe-detail__list li", html);
+
+      console.log(recipeIngredients.length)
+
+      for (let i = 0; i < recipeIngredients.length; i++) {
+        ingredients.push(recipeIngredients.contents()[i].data.toString());
+      }
+
+      log.info('Scrape Finished')
+      console.log(ingredients)
+      return ingredients;
+    })
+};
