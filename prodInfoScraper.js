@@ -34,12 +34,12 @@ exports.scrape = function (link) {
 
 
 exports.nutritionScrape = function (link) {
-  log.info('Start Scrape')
+  log.info('Nutrition Start Scrape')
   var nutriInfo = []
   var website = url+link
   return rp(website)
     .then(function(html){
-      log.info('Add to Array')
+      log.info('Nutrition Add to Array')
       var recipeCalories = $("*[itemprop = 'calories']", html);
       var recipeFat = $("*[itemprop = 'fatContent']", html);
       var recipeSaturates = $("*[itemprop = 'saturatedFatcontent']", html);
@@ -59,28 +59,25 @@ exports.nutritionScrape = function (link) {
     nutriInfo.push(recipeProtein.text() + " of protein");
     nutriInfo.push(recipeFibre.text() + " of fibre");
 
-      log.info('Scrape Finished')
+      log.info('Nutrition Scrape Finished')
       return nutriInfo;
     })
 };
 
 exports.ingredientsScrape = function (link) {
-  log.info('Start Scrape')
+  log.info('Ingredients Start Scrape')
   var ingredients = []
   var website = url+link
   return rp(website)
     .then(function(html){
-      log.info('Add to Array')
+      log.info('Ingredients Add to Array')
       var recipeIngredients = $(".recipe-detail__list li", html);
-
-      console.log(recipeIngredients.length)
 
       for (let i = 0; i < recipeIngredients.length; i++) {
         ingredients.push(recipeIngredients.contents()[i].data.toString());
       }
 
-      log.info('Scrape Finished')
-      console.log(ingredients)
+      log.info('Ingredients Scrape Finished')
       return ingredients;
     })
 };
