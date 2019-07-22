@@ -33,3 +33,33 @@ exports.scrape = function (link) {
 };
 
 
+exports.nutritionScrape = function (link) {
+  log.info('Start Scrape')
+  var nutriInfo = []
+  var website = url+link
+  return rp(website)
+    .then(function(html){
+      log.info('Add to Array')
+      var recipeCalories = $("*[itemprop = 'calories']", html);
+      var recipeFat = $("*[itemprop = 'fatContent']", html);
+      var recipeSaturates = $("*[itemprop = 'saturatedFatcontent']", html);
+      var recipeSugars = $("*[itemprop = 'sugarContent']", html);
+      var recipeSalt = $('.recipe-detail__nutrition-value', html);
+      var recipeCarbs = $("*[itemprop = 'carbohydratecontent']", html);
+      var recipeProtein = $("*[itemprop = 'proteincontent']", html);
+      var recipeFibre = $("*[itemprop = 'fibercontent']", html);
+    
+
+    nutriInfo.push((recipeCalories.text().substr(0, (recipeCalories.text().length - 4))) + " calories");
+    nutriInfo.push(recipeFat.text()  + " of fat");
+    nutriInfo.push(recipeSaturates.text()  + " of saturated fat");
+    nutriInfo.push(recipeSugars.text() + " of sugar");
+    nutriInfo.push(recipeSalt.contents().last().text().replace(/(\r\n|\n|\r|\t)/gm,'') + " of salt");
+    nutriInfo.push(recipeCarbs.text() + " of carbohydrates");
+    nutriInfo.push(recipeProtein.text() + " of protein");
+    nutriInfo.push(recipeFibre.text() + " of fibre");
+
+      log.info('Scrape Finished')
+      return nutriInfo;
+    })
+};
