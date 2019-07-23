@@ -36,6 +36,7 @@ exports.quickScrape = function (searchTerm, resultsInput, cookingTimeInput, cour
   var website = url+searchUrl+resultsUrl+cookingTimeUrl+courseUrl+caloriesFromUrl+caloriesToUrl+collectionUrl+dietaryRequirementsUrl+cuisineUrl+occasionUrl+subtypeUrl+"'"
   return rp(website)
     .then(function(html){
+      log.info('Scrape Finished')
       return cheerio(html)
     })
 };
