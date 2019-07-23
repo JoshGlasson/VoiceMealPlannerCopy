@@ -108,15 +108,27 @@ app.intent('Set_Date', (conv, {date}) => {
 
 function countCheck(conv, food, food1){
   if (conv.data.count === 0) {
-    return realFood.nightmareScrape(food+"%20"+food1, "30", undefined, undefined, undefined, undefined, undefined, "nut+free", undefined, undefined, undefined)
-    .then(function(result){
-      conv.data.food = result
-      log.info("COUNT 0" + conv.data.food.length)
-      return
-    })
-    .then(function(){
-      return mealSearch(conv)
-    })
+    if(port === 4567){
+      return realFood.nightmareScrape(food+"%20"+food1, "30", undefined, undefined, undefined, undefined, undefined, "nut+free", undefined, undefined, undefined)
+      .then(function(result){
+        conv.data.food = result
+        log.info("COUNT 0" + conv.data.food.length)
+        return
+      })
+      .then(function(){
+        return mealSearch(conv)
+      })
+      } else {
+        return realFood.quickScrape(food+"%20"+food1)
+      .then(function(result){
+        conv.data.food = result
+        log.info("COUNT 0" + conv.data.food.length)
+        return
+      })
+      .then(function(){
+        return mealSearch(conv)
+      })
+    }
   } else {
     log.info("COUNT > 0" + conv.data.food.length)
     return mealSearch(conv)
