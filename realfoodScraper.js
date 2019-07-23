@@ -40,37 +40,6 @@ exports.quickScrape = function (searchTerm, resultsInput, cookingTimeInput, cour
     })
 };
 
-exports.nightmareScrape = function(searchTerm, resultsInput, cookingTimeInput, courseInput, calsFromInput, calsToInput, collectionInput, dietaryRequirementsInput, cuisineInput, occasionInput, subtypeInput) {
-  var searchUrl = (searchTerm === undefined ? '' : "search="+searchTerm+foodSearch+searchTerm)
-  var resultsUrl = (resultsInput === undefined ? '' : results+resultsInput)
-  var cookingTimeUrl = (cookingTimeInput === undefined ? '' : totalCookingTime+cookingTimeInput)
-  var courseUrl = (courseInput === undefined ? '' : course+courseInput)
-  var caloriesFromUrl = (calsFromInput === undefined ? '' : caloriesFrom+calsFromInput)
-  var caloriesToUrl = (calsToInput === undefined ? '' : caloriesTo+calsToInput)
-  var collectionUrl = (collectionInput === undefined ? '' : collection+collectionInput)
-  var dietaryRequirementsUrl = (dietaryRequirementsInput === undefined ? '' : dietaryRequirements+dietaryRequirementsInput)
-  var cuisineUrl = (cuisineInput === undefined ? '' : cuisine+cuisineInput)
-  var occasionUrl = (occasionInput === undefined ? '' : occasion+occasionInput)
-  var subtypeUrl = (subtypeInput === undefined ? '' : subtype+"RECIPE")
-
-  var website = url+searchUrl+resultsUrl+cookingTimeUrl+courseUrl+caloriesFromUrl+caloriesToUrl+collectionUrl+dietaryRequirementsUrl+cuisineUrl+occasionUrl+subtypeUrl
-
-  console.log(website)
-  log.info("Start Nightmare")
-  new Nightmare ({ pollInterval: 50 })
-    .goto(website)
-    .wait('body')
-    .evaluate(() => document.querySelector('body').innerHTML)
-    .end()
-    .then(response => {
-      log.info("Nightmare Finished")
-      cheerio(response)
-    }).catch(err => {
-      console.log(err)
-    });
-
-}
-
 function cheerio(data){
   var recipes = []
   var tempArray = []
@@ -101,6 +70,36 @@ function cheerio(data){
   return recipes;
 }
 
+exports.nightmareScrape = function(searchTerm, resultsInput, cookingTimeInput, courseInput, calsFromInput, calsToInput, collectionInput, dietaryRequirementsInput, cuisineInput, occasionInput, subtypeInput) {
+  var searchUrl = (searchTerm === undefined ? '' : "search="+searchTerm+foodSearch+searchTerm)
+  var resultsUrl = (resultsInput === undefined ? '' : results+resultsInput)
+  var cookingTimeUrl = (cookingTimeInput === undefined ? '' : totalCookingTime+cookingTimeInput)
+  var courseUrl = (courseInput === undefined ? '' : course+courseInput)
+  var caloriesFromUrl = (calsFromInput === undefined ? '' : caloriesFrom+calsFromInput)
+  var caloriesToUrl = (calsToInput === undefined ? '' : caloriesTo+calsToInput)
+  var collectionUrl = (collectionInput === undefined ? '' : collection+collectionInput)
+  var dietaryRequirementsUrl = (dietaryRequirementsInput === undefined ? '' : dietaryRequirements+dietaryRequirementsInput)
+  var cuisineUrl = (cuisineInput === undefined ? '' : cuisine+cuisineInput)
+  var occasionUrl = (occasionInput === undefined ? '' : occasion+occasionInput)
+  var subtypeUrl = (subtypeInput === undefined ? '' : subtype+"RECIPE")
+
+  var website = url+searchUrl+resultsUrl+cookingTimeUrl+courseUrl+caloriesFromUrl+caloriesToUrl+collectionUrl+dietaryRequirementsUrl+cuisineUrl+occasionUrl+subtypeUrl
+
+  console.log(website)
+  log.info("Start Nightmare")
+  return new Nightmare ({ pollInterval: 50 })
+    .goto(website)
+    .wait('body')
+    .evaluate(() => document.querySelector('body').innerHTML)
+    .end()
+    .then(response => {
+      log.info("Nightmare Finished")
+      return cheerio(response)
+    }).catch(err => {
+      console.log(err)
+    });
+
+}
 
 /*
 SELECTION OPTIONS
@@ -139,56 +138,3 @@ const occasion = '%26Occasion%3D'
 const subtype = '%26SubType%3D'
 ['RECIPE', 'GALLERY', 'STEPBYSTEP', 'CURATEDLIST']
 */
-
-
-// exports.phantom = async function (searchTerm, resultsInput, cookingTimeInput, courseInput, calsFromInput, calsToInput, collectionInput, dietaryRequirementsInput, cuisineInput, occasionInput, subtypeInput) {
-  
-//   var searchUrl = (searchTerm === undefined ? '' : foodSearch+searchTerm)
-//   var resultsUrl = (resultsInput === undefined ? '' : results+resultsInput)
-//   var cookingTimeUrl = (cookingTimeInput === undefined ? '' : totalCookingTime+cookingTimeInput)
-//   var courseUrl = (courseInput === undefined ? '' : course+courseInput)
-//   var caloriesFromUrl = (calsFromInput === undefined ? '' : caloriesFrom+calsFromInput)
-//   var caloriesToUrl = (calsToInput === undefined ? '' : caloriesTo+calsToInput)
-//   var collectionUrl = (collectionInput === undefined ? '' : collection+collectionInput)
-//   var dietaryRequirementsUrl = (dietaryRequirementsInput === undefined ? '' : dietaryRequirements+dietaryRequirementsInput)
-//   var cuisineUrl = (cuisineInput === undefined ? '' : cuisine+cuisineInput)
-//   var occasionUrl = (occasionInput === undefined ? '' : occasion+occasionInput)
-//   var subtypeUrl = (subtypeInput === undefined ? '' : subtype+subtypeInput)
-
-//   var website = url+"'"+searchUrl+resultsUrl+cookingTimeUrl+courseUrl+caloriesFromUrl+caloriesToUrl+collectionUrl+dietaryRequirementsUrl+cuisineUrl+occasionUrl+subtypeUrl+"'"
-  
-//   var recipes = []
-//   var tempArray = []
-//   console.log(website)
-//   log.info("Phantom Start")
-//     const instance = await phantom.create();
-//     const page = await instance.createPage();
-//     page.property('loadImages', false);
-//     page.property('resourceTimeout', 3000);
-//     await page.on("onResourceRequested", function(requestData) {
-//         // console.info('Requesting', requestData.url)
-//     });
-
-//     const status = await page.open(website);
-//     // console.log(status);
-
-//     const content = await page.property('content');
-//     log.info("Phantom Finished")
-
-//     log.info("Cheerio Start")
-//     var recipeLinks = $('.recipe-link', content);
-
-//     for (let i = 0; i < recipeLinks.length; i++) {
-//       if(recipeLinks[i].attribs.href.substring(0,8) == "/recipes") {
-//         tempArray.push(recipeLinks[i].attribs.title);
-//         tempArray.push(recipeLinks[i].attribs.href);
-//         recipes.push(tempArray);
-//         tempArray = []
-//       }
-//     }
-//     log.info("Cheerio Finished")
-//     console.log(recipes)
-
-//     await instance.exit();
-
-// };
