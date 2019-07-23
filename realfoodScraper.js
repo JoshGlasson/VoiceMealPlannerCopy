@@ -33,7 +33,7 @@ exports.quickScrape = function (searchTerm, resultsInput, cookingTimeInput, cour
   var occasionUrl = (occasionInput === undefined ? '' : occasion+occasionInput)
   var subtypeUrl = (subtypeInput === undefined ? '' : subtype+subtypeInput)
 
-  var website = url+searchUrl+resultsUrl+cookingTimeUrl+courseUrl+caloriesFromUrl+caloriesToUrl+collectionUrl+dietaryRequirementsUrl+cuisineUrl+occasionUrl+subtypeUrl
+  var website = url+searchUrl+resultsUrl+cookingTimeUrl+courseUrl+caloriesFromUrl+caloriesToUrl+collectionUrl+dietaryRequirementsUrl+cuisineUrl+occasionUrl+subtypeUrl+"'"
   return rp(website)
     .then(function(html){
       return cheerio(html)
@@ -81,9 +81,9 @@ exports.nightmareScrape = function(searchTerm, resultsInput, cookingTimeInput, c
   var dietaryRequirementsUrl = (dietaryRequirementsInput === undefined ? '' : dietaryRequirements+dietaryRequirementsInput)
   var cuisineUrl = (cuisineInput === undefined ? '' : cuisine+cuisineInput)
   var occasionUrl = (occasionInput === undefined ? '' : occasion+occasionInput)
-  var subtypeUrl = (subtypeInput === undefined ? '' : subtype+"RECIPE")
+  var subtypeUrl = (subtypeInput === undefined ? '' : subtype+subtypeInput)
 
-  var website = url+searchUrl+resultsUrl+cookingTimeUrl+courseUrl+caloriesFromUrl+caloriesToUrl+collectionUrl+dietaryRequirementsUrl+cuisineUrl+occasionUrl+subtypeUrl
+  var website = url+searchUrl+resultsUrl+cookingTimeUrl+courseUrl+caloriesFromUrl+caloriesToUrl+collectionUrl+dietaryRequirementsUrl+cuisineUrl+occasionUrl+subtypeUrl+"'"
 
   console.log(website)
   log.info("Start Nightmare")
