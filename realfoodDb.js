@@ -1,7 +1,5 @@
 const bunyan = require('bunyan');
 const log = bunyan.createLogger({name: "db_create"});
-const realFood = require('./realfoodScraper');
-const info = require('./prodInfoScraper');
 const Nightmare = require('nightmare');
 const $ = require('cheerio');
 
@@ -13,8 +11,8 @@ mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgs
 });
 
 async function scrapeAll(){
-    for (let i = 1; i < 158; i++) {
-        var url = "https://realfood.tesco.com/search.html?#!q='selectedobjecttype%3DRECIPES%26page%3D"+i+"%26perpage%3D30%26SubType%3DRECIPE'"
+    for (let i = 1; i <66; i++) {
+        var url = "https://realfood.tesco.com/search.html?#!q='selectedobjecttype%3DRECIPES%26page%3D"+i+"%26perpage%3D30%26DietaryOption%3Dvegetarian%26SubType%3DRECIPE'"
         await addToDb(url)
     }
 }
@@ -42,20 +40,20 @@ function nightmareScrape(website) {
   
       var recipeLinks = $('.recipe-link', data);
       var recipeList = $('.recipe-list-item', data);
-      var recipePic = $('.recipe-list-item-visual img', data);
+    //   var recipePic = $('.recipe-list-item-visual img', data);
   
       for (let i = 0; i < recipeList.length; i++) {
         if(recipeLinks[i].attribs.href.substring(0,8) == "/recipes") {
           tempArray.push(recipeLinks[i].attribs.title);
           tempArray.push(recipeLinks[i].attribs.href);
-          tempArray.push(recipeList[i].attribs["data-objecttype"]);
-          tempArray.push(recipeList[i].attribs["data-cookingtime"]);
-          tempArray.push(recipeList[i].attribs["data-summary"].toString().replace(/(<strong>|<\/strong>)/gm,''));
-          tempArray.push(recipeList[i].attribs["data-serves"]);
-          tempArray.push(recipeList[i].attribs["data-calories"]);
-          tempArray.push(recipeList[i].attribs["data-freezable"]);
-          tempArray.push(recipeList[i].attribs["data-healthy"]);
-          tempArray.push((recipePic[i].attribs.src).replace(" ", "%20"));
+        //   tempArray.push(recipeList[i].attribs["data-objecttype"]);
+        //   tempArray.push(recipeList[i].attribs["data-cookingtime"]);
+        //   tempArray.push(recipeList[i].attribs["data-summary"].toString().replace(/(<strong>|<\/strong>)/gm,''));
+        //   tempArray.push(recipeList[i].attribs["data-serves"]);
+        //   tempArray.push(recipeList[i].attribs["data-calories"]);
+        //   tempArray.push(recipeList[i].attribs["data-freezable"]);
+        //   tempArray.push(recipeList[i].attribs["data-healthy"]);
+        //   tempArray.push((recipePic[i].attribs.src).replace(" ", "%20"));
           recipes.push(tempArray);
           tempArray = []
         }
@@ -66,6 +64,39 @@ function nightmareScrape(website) {
   }
 
 function addToDb(url){
+    return nightmareScrape(url)
+    .then(function(result){
+        for (let i = 0; i < result.length; i++) {
+            log.info("Start Saving to DB")
+            var collection = db.collection('foodDB'); 
+            collection.findOneAndUpdate(
+            { "recipe": result[i][0] },
+            { $set : {
+                "tags.vegetarian": true
+                }
+            },
+            { upsert: true },
+            function(err, response){
+                if (!err) {
+                log.info("Finished Saving to DB")
+                log.info(response)
+                log.info(collection.count().then(function(result){console.log(result)}))
+                } else {
+                    log.info("Finished Saving to DB")
+                    log.info(err)
+                    log.info(collection.count().then(function(result){console.log(result)}))
+                }
+            });
+            }
+        })
+  }
+
+  scrapeAll()
+
+
+
+ /* Add all to DB
+  function addToDb(url){
     return nightmareScrape(url)
     .then(function(result){
         for (let i = 0; i < result.length; i++) {
@@ -101,6 +132,4 @@ function addToDb(url){
             }
         })
   }
-
-//   scrapeAll()
-
+  */
