@@ -11,8 +11,8 @@ mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgs
 });
 
 async function scrapeAll(){
-    for (let i = 1; i <21; i++) {
-        var url = "https://realfood.tesco.com/search.html?#!q='selectedobjecttype%3DRECIPES%26page%3D"+i+"%26perpage%3D30"+"%26Occasion%3D"+"Christmas"+"%26SubType%3DRECIPE'"
+    for (let i = 1; i <4; i++) {
+        var url = "https://realfood.tesco.com/search.html?#!q='selectedobjecttype%3DRECIPES%26page%3D"+i+"%26perpage%3D30"+"%26Occasion%3D"+"Father%2527s+Day"+"%26SubType%3DRECIPE'"
         await addToDb(url)
     }
 }
@@ -72,7 +72,7 @@ function addToDb(url){
             collection.findOneAndUpdate(
             { "recipe": result[i][0] },
             { $set : {
-                "tags.christmas": true
+                "tags.fathersDay": true
                 }
             },
             { upsert: true },
