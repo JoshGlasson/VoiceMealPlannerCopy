@@ -12,7 +12,7 @@ exports.updateRecipeInDb = function (conv, userId, date){
 
   collection.updateOne(
     { "userId": userId , "meals.date": new Date(date).toDateString() },
-    { $set: { "meals.$.recipe": conv.data.foodChoice} },
+    { $set: { "meals.$.recipe": conv.data.foodChoice.recipe} },
     { upsert: true },
     function(err, response){
       if (!err) {
@@ -27,7 +27,7 @@ exports.addToDb = function (conv, userId, date){
   collection.findOneAndUpdate(
     { "userId": userId },
     { $push : {
-        "meals": {"date": new Date(date).toDateString(), "recipe": conv.data.foodChoice}
+        "meals": {"date": new Date(date).toDateString(), "recipe": conv.data.foodChoice.recipe}
       }
     },
     { upsert: true },

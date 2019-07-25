@@ -14,8 +14,6 @@ const {
 
 const helpers = require('./helpers');
 const dbutils = require('./dbutils');
-// const realFood = require('./realfoodScraper');
-// const info = require('./prodInfoScraper');
 const apiSearch = require('./apiCall');
 const bunyan = require('bunyan');
 const log = bunyan.createLogger({name: "tmp"});
@@ -109,12 +107,17 @@ app.intent('Set_Date', (conv, {date}) => {
 });
 
 function countCheck(conv, food, food1){
+  if (conv.data.count === 0) {
   return apiSearch.getRecipes(food+" "+food1)
   .then(function(result){
     conv.data.food = result
-    log.info("COUNT 0" + conv.data.food.label)
+    log.info("COUNT 0" + conv.data.food.length)
     return showRecipe(conv)
   })
+  } else {
+    log.info("COUNT > 0" + conv.data.food.length)
+      return showRecipe(conv)
+  }
 }
 
 function replaceCheck(conv, date){
@@ -142,11 +145,11 @@ function replaceCheck(conv, date){
               }),
             }),
             new BrowseCarouselItem({
-              title: conv.data.food.label,
+              title: conv.data.foodChoice.recipe,
               url: (conv.data.food.url),
               image: new Image({
-                url: conv.data.food.image,
-                alt: 'Image of '+conv.data.food.label+"",
+                url: ("https://realfood.tesco.com"+conv.data.foodChoice.details.href+""),
+                alt: 'Image of '+conv.data.foodChoice.recipe+"",
               }),
             }),
           ],
@@ -159,25 +162,34 @@ function replaceCheck(conv, date){
 })}
 
 function showRecipe(conv){
-    conv.ask("Would you like " + conv.data.food.label);
+  if (conv.data.food.length > 0) {
+    helpers.move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
+
+    conv.data.foodChoice = conv.data.food.pop();
+    conv.ask("Would you like " + conv.data.foodChoice.recipe);
     conv.ask(new BasicCard({
-      title: conv.data.food.label,
+      title: conv.data.foodChoice.recipe,
       buttons: new Button({
-        title: 'View on Web Browser',
-        url: (conv.data.food.url),
+        title: 'View on Tesco Realfood',
+        url: ("https://realfood.tesco.com"+conv.data.foodChoice.details.href+""),
       }),
-      subtitle: "From "+conv.data.food.source,
-      text: ("Serves "+conv.data.food.yield+". ")
-      + ("Time to Prepare "+conv.data.food.totalTime+". ")
-      + (Math.round(conv.data.food.calories/conv.data.food.yield)+" Calories per Serving. "),
+      subtitle: conv.data.foodChoice.details.summary,
+      text: (conv.data.foodChoice.details.cookingTime === undefined ? "" : conv.data.foodChoice.details.cookingTime + ". ") 
+      + (conv.data.foodChoice.details.serves === "False" ? "" : "Serves "+conv.data.foodChoice.details.serves + ". ") 
+      + (conv.data.foodChoice.details.calories === "False" ? "" : conv.data.foodChoice.details.calories + " Calories per Serving. ") 
+      + (conv.data.foodChoice.details.freezable === "False" ? "" : "Freezable" + ". ") 
+      + (conv.data.foodChoice.details.healthy === "False" ? "" : "Healthy" + ". "), 
       image: new Image({
-        url: conv.data.food.image,
-        alt: "Image of food",
+        url: "https://realfood.tesco.com"+conv.data.foodChoice.details.imageLink,
+        alt: "Image of "+conv.data.foodChoice.recipe,
       }),
     }));
     conv.ask(new Suggestions('yes', 'no'));
     conv.data.count++
     return 
+  } else {
+    conv.ask("That's all the results, please search for something else");
+  }
 }
 
 const expressApp = express().use(bodyParser.json());

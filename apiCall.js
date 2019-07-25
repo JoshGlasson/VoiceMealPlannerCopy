@@ -2,18 +2,28 @@ const rp = require('request-promise');
 const bunyan = require('bunyan');
 const log = bunyan.createLogger({name: "api_call"});
 
-const apiKey = "4dc30dcddaef4d1e5112579b1a046e18"
-const appId = "c95a1779"
+const apiKey = "F40FD4C81C095B2EA51C78AD3D676237"
+
 
 exports.getRecipes = function(searchTerm){
     const random = Math.floor(Math.random()*30)
-    var apiCall = "https://api.edamam.com/search?q="+searchTerm+"&app_id="+appId+"&app_key="+apiKey+"&from="+random+"&to="+(random+1)
+    var options = { method: 'GET',
+        url: 'https://tescomealplannertest.search.windows.net/indexes/recipeindextagfilter/docs',
+        qs: { 'api-version': '2019-05-06', search: searchTerm, '$count': "true" },
+        headers: {
+            Accept: '*/*',
+            'Content-Type': 'application/json',
+            'api-key': apiKey 
+        } 
+    };
+
     log.info("Pre Call")
-    return rp(apiCall)
+    return rp(options)
     .then(function(result){
        log.info("Call Finished")
        var jsonResult = JSON.parse(result)
-       return jsonResult.hits[0].recipe
+       console.log(jsonResult.value)
+       return jsonResult.value
     })
 
 }
