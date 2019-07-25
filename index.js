@@ -108,7 +108,7 @@ app.intent('Set_Date', (conv, {date}) => {
 
 function countCheck(conv, food, food1){
   if (conv.data.count === 0) {
-  return apiSearch.getRecipes(food+" "+food1)
+  return apiSearch.searchRecipes(food+" "+food1)
   .then(function(result){
     conv.data.food = result
     log.info("COUNT 0" + conv.data.food.length)
@@ -122,8 +122,10 @@ function countCheck(conv, food, food1){
 
 function replaceCheck(conv, date){
   let dbFood = []; 
+  log.info("CHECK DB")
   return dbutils.isMeal(conv, userId, date)
   .then(function(data) {
+    log.info("INFO BACK FROM DB")
     if (data) {
       for (let i = 0; i < data.meals.length; i++) {
         if(data.meals[i].date === (new Date(conv.data.date).toDateString())){
@@ -131,24 +133,25 @@ function replaceCheck(conv, date){
           break
         }
       }
-      return info.scrape(dbFood[1])
+      return apiSearch.getRecipeInfo(dbFood)
       .then(function(foodInfo){
-        conv.ask("You already have a meal for this date, would you like to replace " + dbFood[0] + " with " + conv.data.foodChoice[0] + "?")
+        log.info("FOUND IN DB "+ foodInfo)
+        conv.ask("You already have a meal for this date, would you like to replace " + foodInfo.recipe + " with " + conv.data.foodChoice.recipe + "?")
         conv.ask(new BrowseCarousel({
           items: [
             new BrowseCarouselItem({
-              title: dbFood[0],
-              url: ("https://realfood.tesco.com"+dbFood[1]+""),
+              title: foodInfo.recipe,
+              url: ("https://realfood.tesco.com"+foodInfo.details.href+""),
               image: new Image({
-                url: foodInfo[0],
-                alt: 'Image of '+dbFood[0]+"",
+                url: ("https://realfood.tesco.com"+foodInfo.details.imageLink+""),
+                alt: 'Image of '+foodInfo.recipe+"",
               }),
             }),
             new BrowseCarouselItem({
               title: conv.data.foodChoice.recipe,
-              url: (conv.data.food.url),
+              url: ("https://realfood.tesco.com"+conv.data.foodChoice.details.href+""),
               image: new Image({
-                url: ("https://realfood.tesco.com"+conv.data.foodChoice.details.href+""),
+                url: ("https://realfood.tesco.com"+conv.data.foodChoice.details.imageLink+""),
                 alt: 'Image of '+conv.data.foodChoice.recipe+"",
               }),
             }),
