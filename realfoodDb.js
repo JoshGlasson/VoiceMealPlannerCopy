@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const bunyan = require('bunyan');
 const log = bunyan.createLogger({name: "db_create"});
 const Nightmare = require('nightmare');
@@ -7,6 +8,7 @@ var mongoClient = require("mongodb").MongoClient;
 var db = {};
 mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw%3D%3D@tmptest.documents.azure.com:10255/?ssl=true", { useNewUrlParser: true },function (err, client) {
   db = client.db("foodDB");
+  db.collection('foodDB').createIndex( { "recipe": "text" }, {unique:true} )
   db.collection('foodDB').count().then(function(result){console.log(result)})
 });
 
@@ -91,8 +93,7 @@ function addToDb(url){
         })
   }
 
-  scrapeAll()
-
+  // scrapeAll()
 
 
  /* Add all to DB
