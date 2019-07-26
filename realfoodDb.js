@@ -9,12 +9,14 @@ var db = {};
 mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw%3D%3D@tmptest.documents.azure.com:10255/?ssl=true", { useNewUrlParser: true },function (err, client) {
   db = client.db("foodDB");
   db.collection('foodDB').count().then(function(result){console.log(result)})
-  db.collection('foodDB').find().forEach(function(data) {
+  db.collection('foodDB').find({"details.calories": { $type: 2}}).forEach(function(data) {
     db.collection('foodDB').updateOne({"recipe":data.recipe},{
         "$set": {
             "details.calories": parseInt(data.details.calories)
         }
     });
+    log.info("Found one")
+    console.log(data.recipe)
   })
 
 });
