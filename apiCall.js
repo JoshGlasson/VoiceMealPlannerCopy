@@ -5,8 +5,8 @@ const log = bunyan.createLogger({name: "api_call"});
 const apiKey = "F40FD4C81C095B2EA51C78AD3D676237"
 
 
-exports.searchRecipes = function(searchTerm, parameters){
-   let filter = concatParameters(parameters)
+exports.searchRecipes = async function(searchTerm, parameters){
+   let filter = await concatParameters(parameters)
     var options = { method: 'GET',
         url: 'https://tescomealplannertest.search.windows.net/indexes/recipeindextagfilter/docs',
         qs: { 'api-version': '2019-05-06', search: searchTerm, '$count': "true", '$filter': filter },
@@ -16,7 +16,7 @@ exports.searchRecipes = function(searchTerm, parameters){
             'api-key': apiKey 
         } 
     };
-
+    log.info(options)
     log.info("Pre Call")
     return rp(options)
     .then(function(result){
@@ -28,7 +28,7 @@ exports.searchRecipes = function(searchTerm, parameters){
 }
 function concatParameters(parameters){
     let filter = "tags/lunch ne 'NOTAG'" // parameter to don't filter anything
-    if(parameters){
+    if(parameters.length > 0){
         filter = ""
         parameters.forEach(param => {
             filter = filter + "tags/" + param + " eq 'True' and "
