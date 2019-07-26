@@ -70,7 +70,7 @@ exports.savePrefences = function (conv, userId) {
   collection.findOneAndUpdate(
     { "userId": userId },
     { $set : {
-        "prefences": conv.data.prefences
+        "preferences": conv.data.preferences
       }
     },
     { upsert: true },

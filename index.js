@@ -41,12 +41,12 @@ app.intent('Default Welcome Intent', (conv) => {
     }));
   } else {
     userId = helpers.checkUserId(conv, userId);
-    log.info("Preferences before: " + conv.data.preferences)
-    conv.data.preferences = dbutils.loadPrefences(userId);
-    log.info("Preferences after: " + Promise.resolve(conv.data.preferences))
 
-    conv.ask(`Hi again, ${googleName}. Would you like to plan a meal or manage your preferences?`);
-    conv.ask(new Suggestions('plan a meal', 'preferences'));
+    return dbutils.loadPrefences(userId).then((response) => {
+      conv.data.preferences = response
+      conv.ask(`Hi again, ${googleName}. Would you like to plan a meal or manage your preferences?`);
+      conv.ask(new Suggestions('plan a meal', 'preferences'));
+    });
   }
 });
 
@@ -113,7 +113,7 @@ app.intent('Set_Date', (conv, {date}) => {
 
 function countCheck(conv, food, food1){
   if (conv.data.count === 0) {
-  return apiSearch.searchRecipes(food+" "+food1)
+  return apiSearch.searchRecipes(food+" "+food1,conv.data.preferences)
   .then(function(result){
     conv.data.food = result
     log.info("COUNT 0" + conv.data.food.length)
@@ -200,12 +200,14 @@ function showRecipe(conv){
   }
 }
 
-app.intent("Allergies", (conv, {allergies}) => {
-  log.info()
+app.intent("Allergies",(conv, {allergies}) => {
+  log.info("Allergiy before" + conv.data.preferences)
   conv.data.preferences.push(allergies);
+  log.info("Allergiy after" + conv.data.preferences)
+
   dbutils.savePrefences(conv,userId);
 
-  conv.close("Got it, saved " + conv.data.preferences[0]);
+  conv.close("Got it, saved " + conv.data.preferences);
 });
 
 const expressApp = express().use(bodyParser.json());
