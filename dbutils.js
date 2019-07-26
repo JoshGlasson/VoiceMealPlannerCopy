@@ -50,3 +50,33 @@ exports.isMeal = function (conv, userId, date){
     }
   });
 }
+
+exports.loadPrefences = function (userId) {
+  var collection = db.collection('testcollection'); 
+
+  return collection.findOne({ "userId": userId})
+  .then(function(data) {
+    if (data) {
+      return data.preferences;
+    } else {
+      return [];
+    }
+  });
+}
+
+exports.savePrefences = function (conv, userId) {
+  var collection = db.collection('testcollection'); 
+
+  collection.findOneAndUpdate(
+    { "userId": userId },
+    { $set : {
+        "prefences": conv.data.prefences
+      }
+    },
+    { upsert: true },
+    function(err, response){
+      if (!err) {
+        log.info("ADD "+ response)
+      }
+    });
+}

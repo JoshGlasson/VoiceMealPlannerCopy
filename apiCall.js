@@ -61,4 +61,3 @@ exports.getRecipeInfo = function(recipeName){
     })
 }
 
-this.searchRecipes("broccoli")
