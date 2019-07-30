@@ -200,14 +200,22 @@ function showRecipe(conv){
   }
 }
 
+app.intent("Default Welcome Intent - preferences", (conv) => {
+  conv.ask(`Your current preferences are ${conv.data.preferences}. Would you like to add or remove any preferences?`)
+  conv.ask(new Suggestions('Add', 'Remove'));
+});
+
 app.intent("Preferences",(conv, {preferences}) => {
   log.info("Preferences before" + conv.data.preferences)
-  conv.data.preferences.push(preferences);
-  log.info("Preferences after" + conv.data.preferences)
-
-  dbutils.savePrefences(conv,userId);
-
-  conv.close("Got it, saved " + conv.data.preferences);
+  if (!conv.data.preferences.includes(preferences)){
+    conv.data.preferences.push(preferences);
+    dbutils.savePrefences(conv,userId);
+    log.info("Preferences after" + conv.data.preferences)
+  conv.ask("Got it, saved " + conv.data.preferences + ". Would you like to set anymore preferences?");
+  } else {
+    conv.ask("This preference is already set. Would you like to set anymore preferences?")
+  }
+  conv.ask(new Suggestions('yes', 'no'));
 });
 
 const expressApp = express().use(bodyParser.json());
