@@ -9,7 +9,7 @@ const log = bunyan.createLogger({name: "scrape"});
 exports.scrape = function (searchTerm) {
   log.info('Start Scrape')
   var recipes = []
-  var website = url+searchTerm+"#!q='search%3D"+searchTerm+"%26perpage%3D200'"
+  var website = `${url}${searchTerm}#!q='search%3D"${searchTerm}%26perpage%3D200'`
   return rp(website)
     .then(function(html){
       log.info('Add to Array')

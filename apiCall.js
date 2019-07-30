@@ -8,8 +8,8 @@ const apiKey = "F40FD4C81C095B2EA51C78AD3D676237"
 exports.searchRecipes = function(searchTerm, parameters){
    let filter = concatParameters(parameters)
     var options = { method: 'GET',
-        url: 'https://tescomealplannertest.search.windows.net/indexes/recipeindextagfilter/docs',
-        qs: { 'api-version': '2019-05-06', search: searchTerm, '$count': "true", '$filter': filter },
+        url: `https://tescomealplannertest.search.windows.net/indexes/recipeindex/docs?api-version=2019-05-06&$count=true&search=${searchTerm}${(filter === "" ? '' : `&$filter=${filter}`)}`,
+        // qs: { 'api-version': '2019-05-06', search: searchTerm, '$count': "true", '$filter': filter },
         headers: {
             Accept: '*/*',
             'Content-Type': 'application/json',
@@ -22,16 +22,14 @@ exports.searchRecipes = function(searchTerm, parameters){
     .then(function(result){
        log.info("Call Finished")
        var jsonResult = JSON.parse(result)
-       console.log(jsonResult)
        return jsonResult.value
     })
 }
 function concatParameters(parameters){
-    let filter = "tags/lunch ne 'NOTAG'" // parameter to don't filter anything
+    let filter = ""
     if(parameters && parameters.length > 0){
-        filter = ""
         parameters.forEach(param => {
-            filter = filter + "tags/" + param + " eq 'True' and "
+            filter = `${filter}tags/${param} eq 'True' and `
         });
         if(filter != "") {
             filter = filter.slice(0,-5)
@@ -43,8 +41,8 @@ function concatParameters(parameters){
 
 exports.getRecipeInfo = function(recipeName){
     var options = { method: 'GET',
-        url: 'https://tescomealplannertest.search.windows.net/indexes/recipeindextagfilter/docs',
-        qs: { 'api-version': '2019-05-06', search: '%22'+recipeName+'%22', '$count': "true" },
+        url: `https://tescomealplannertest.search.windows.net/indexes/recipeindex/docs?api-version=2019-05-06&$count=true&search="${recipeName}"`,
+        // qs: { 'api-version': '2019-05-06', search: `%22${recipeName}%22`, '$count': "true" },
         headers: {
             Accept: '*/*',
             'Content-Type': 'application/json',
@@ -56,7 +54,6 @@ exports.getRecipeInfo = function(recipeName){
     .then(function(result){
        log.info("Call Finished")
        var jsonResult = JSON.parse(result)
-    //    info(jsonResult.value[0])
        return jsonResult.value[0]
     })
 }

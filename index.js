@@ -99,7 +99,7 @@ app.intent('Meal_Accepted', (conv) => {
 app.intent('Replace_Current_Meal', (conv) => {
   let date = conv.data.date; 
   dbutils.updateRecipeInDb(conv, userId, date);
-  conv.close("I updated your meal choice for "+new Date(date).toDateString()+". I hope its delicious, goodbye!")
+  conv.close(`I updated your meal choice for ${new Date(date).toDateString()}. I hope its delicious, goodbye!`)
 });
 
 app.intent('Keep_Current_Meal', (conv) => {
@@ -113,7 +113,7 @@ app.intent('Set_Date', (conv, {date}) => {
 
 function countCheck(conv, food, food1){
   if (conv.data.count === 0) {
-  return apiSearch.searchRecipes(food+" "+food1,conv.data.preferences)
+  return apiSearch.searchRecipes(`${food} ${food1}`,conv.data.preferences)
   .then(function(result){
     conv.data.food = result
     log.info("COUNT 0" + conv.data.food.length)
@@ -141,23 +141,23 @@ function replaceCheck(conv, date){
       return apiSearch.getRecipeInfo(dbFood)
       .then(function(foodInfo){
         log.info("FOUND IN DB "+ foodInfo)
-        conv.ask("You already have a meal for this date, would you like to replace " + foodInfo.recipe + " with " + conv.data.foodChoice.recipe + "?")
+        conv.ask(`You already have a meal for this date, would you like to replace ${foodInfo.recipe} with ${conv.data.foodChoice.recipe}?`)
         conv.ask(new BrowseCarousel({
           items: [
             new BrowseCarouselItem({
               title: foodInfo.recipe,
-              url: ("https://realfood.tesco.com"+foodInfo.details.href+""),
+              url: `https://realfood.tesco.com${foodInfo.details.href}`,
               image: new Image({
-                url: ("https://realfood.tesco.com"+foodInfo.details.imageLink+""),
-                alt: 'Image of '+foodInfo.recipe+"",
+                url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
+                alt: `Image of ${foodInfo.recipe}`,
               }),
             }),
             new BrowseCarouselItem({
               title: conv.data.foodChoice.recipe,
-              url: ("https://realfood.tesco.com"+conv.data.foodChoice.details.href+""),
+              url: `https://realfood.tesco.com${conv.data.foodChoice.details.href}`,
               image: new Image({
-                url: ("https://realfood.tesco.com"+conv.data.foodChoice.details.imageLink+""),
-                alt: 'Image of '+conv.data.foodChoice.recipe+"",
+                url: `https://realfood.tesco.com${conv.data.foodChoice.details.imageLink}`,
+                alt: `Image of ${conv.data.foodChoice.recipe}`,
               }),
             }),
           ],
@@ -165,7 +165,7 @@ function replaceCheck(conv, date){
       conv.ask(new Suggestions('yes', 'no'))})  
     } else {
       dbutils.addToDb(conv, userId, date)
-      conv.close("I have saved this for dinner on "+new Date(date).toDateString()+". Enjoy your meal, goodbye!")
+      conv.close(`I have saved this for ${new Date(date).toDateString()}. Enjoy your meal, goodbye!`)
   }
 })}
 
@@ -179,17 +179,17 @@ function showRecipe(conv){
       title: conv.data.foodChoice.recipe,
       buttons: new Button({
         title: 'View on Tesco Realfood',
-        url: ("https://realfood.tesco.com"+conv.data.foodChoice.details.href+""),
+        url: `https://realfood.tesco.com${conv.data.foodChoice.details.href}`,
       }),
       subtitle: conv.data.foodChoice.details.summary,
-      text: (conv.data.foodChoice.details.cookingTime === undefined ? "" : conv.data.foodChoice.details.cookingTime + ". ") 
-      + (conv.data.foodChoice.details.serves === "False" ? "" : "Serves "+conv.data.foodChoice.details.serves + ". ") 
-      + (conv.data.foodChoice.details.calories === "False" ? "" : conv.data.foodChoice.details.calories + " Calories per Serving. ") 
+      text: (conv.data.foodChoice.details.cookingTime === undefined ? "" : `${conv.data.foodChoice.details.cookingTime}. `) 
+      + (conv.data.foodChoice.details.serves === "False" ? "" : `Serves ${conv.data.foodChoice.details.serves}. `) 
+      + (conv.data.foodChoice.details.calories === "False" ? "" : `${conv.data.foodChoice.details.calories} Calories per Serving. `) 
       + (conv.data.foodChoice.details.freezable === "False" ? "" : "Freezable" + ". ") 
       + (conv.data.foodChoice.details.healthy === "False" ? "" : "Healthy" + ". "), 
       image: new Image({
-        url: "https://realfood.tesco.com"+conv.data.foodChoice.details.imageLink,
-        alt: "Image of "+conv.data.foodChoice.recipe,
+        url: `https://realfood.tesco.com${conv.data.foodChoice.details.imageLink}`,
+                alt: `Image of ${conv.data.foodChoice.recipe}`,
       }),
     }));
     conv.ask(new Suggestions('yes', 'no'));
