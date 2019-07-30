@@ -200,10 +200,10 @@ function showRecipe(conv){
   }
 }
 
-app.intent("Allergies",(conv, {allergies}) => {
-  log.info("Allergiy before" + conv.data.preferences)
-  conv.data.preferences.push(allergies);
-  log.info("Allergiy after" + conv.data.preferences)
+app.intent("Preferences",(conv, {preferences}) => {
+  log.info("Preferences before" + conv.data.preferences)
+  conv.data.preferences.push(preferences);
+  log.info("Preferences after" + conv.data.preferences)
 
   dbutils.savePrefences(conv,userId);
 
