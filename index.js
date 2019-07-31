@@ -229,9 +229,7 @@ app.intent("Default Welcome Intent - preferences - remove - value", (conv, {pref
   });
   dbutils.savePrefences(conv,userId);
   if (conv.data.preferences.length === 0){
-  
-    log.info("Empty preferences")
-    conv.followup("EMPTY", JSON.parse(helpers.inputParameters("preferences")) );
+      conv.followup("EMPTY", JSON.parse(helpers.inputParameters("preferences")) );
   } 
   else {
     conv.ask("I've updated your preferences to " + conv.data.preferences + ". Would you like to remove anymore preferences?");
