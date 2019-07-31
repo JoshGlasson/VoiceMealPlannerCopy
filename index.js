@@ -228,19 +228,18 @@ app.intent("Default Welcome Intent - preferences - remove - value", (conv, {pref
     return value != preferences;
   });
   dbutils.savePrefences(conv,userId);
-  // ,
-  //       "arguments": [
-  //         {
-  //           "rawText": "preferences",
-  //           "textValue": "preferences"
-  //         }
-  //       ]
   if (conv.data.preferences.length === 0){
     var parameters = `{"inputs": [
       {
         "rawInputs": [
           {
             "query": "preferences"
+          }
+        ],
+        "arguments": [
+          {
+            "rawText": "preferences",
+            "textValue": "preferences"
           }
         ]}]}`
     conv.followup("EMPTY", JSON.parse(parameters) );
