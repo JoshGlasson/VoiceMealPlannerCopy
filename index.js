@@ -201,8 +201,13 @@ function showRecipe(conv){
 }
 
 app.intent("Default Welcome Intent - preferences", (conv) => {
-  conv.ask(`Your current preferences are ${conv.data.preferences}. Would you like to add or remove any preferences?`)
-  conv.ask(new Suggestions('Add', 'Remove'));
+  if (conv.data.preferences.length === 0){
+    conv.ask('You have no preferences set, would you like to add a preference?')
+    conv.ask(new Suggestions('Add'));
+  } else {
+    conv.ask(`Your current preferences are ${conv.data.preferences}. Would you like to add or remove any preferences?`)
+    conv.ask(new Suggestions('Add', 'Remove'));
+  }
 });
 
 app.intent("Preferences",(conv, {preferences}) => {
