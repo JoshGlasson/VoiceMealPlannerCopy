@@ -224,26 +224,16 @@ app.intent("Preferences",(conv, {preferences}) => {
 });
 
 app.intent("Default Welcome Intent - preferences - remove - value", (conv, {preferences}) => {
-  conv.data.preferences = conv.data.preferences.filter(function(value, index, arr){
+  conv.data.preferences = conv.data.preferences.filter(function(value){
     return value != preferences;
   });
   dbutils.savePrefences(conv,userId);
   if (conv.data.preferences.length === 0){
-    var parameters = `{"inputs": [
-      {
-        "rawInputs": [
-          {
-            "query": "preferences"
-          }
-        ],
-        "arguments": [
-          {
-            "rawText": "preferences",
-            "textValue": "preferences"
-          }
-        ]}]}`
-    conv.followup("EMPTY", JSON.parse(parameters) );
-  } else {
+  
+    log.info("Empty preferences")
+    conv.followup("EMPTY", JSON.parse(helpers.inputParameters("preferences")) );
+  } 
+  else {
     conv.ask("I've updated your preferences to " + conv.data.preferences + ". Would you like to remove anymore preferences?");
     conv.ask(new Suggestions('yes', 'no'));
   }

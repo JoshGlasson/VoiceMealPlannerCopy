@@ -19,3 +19,23 @@ exports.move = function (array, oldIndex, newIndex){
     return userId;
   }
 
+exports.inputParameters = function (input) {
+  var parameters = `{"inputs": [
+    {
+      "intent": "actions.intent.TEXT",
+      "rawInputs": [
+        {
+          "inputType": "KEYBOARD",
+          "query": "${input}"
+        }
+      ],
+      "arguments": [
+        {
+          "name": "text",
+          "rawText": "${input}",
+          "textValue": "${input}"
+        }
+      ]
+    }]}`
+      return parameters
+}
