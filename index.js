@@ -228,8 +228,26 @@ app.intent("Default Welcome Intent - preferences - remove - value", (conv, {pref
     return value != preferences;
   });
   dbutils.savePrefences(conv,userId);
-  conv.ask("I've updated your preferences to " + conv.data.preferences + ". Would you like to remove anymore preferences?");
-  conv.ask(new Suggestions('yes', 'no'));
+  // ,
+  //       "arguments": [
+  //         {
+  //           "rawText": "preferences",
+  //           "textValue": "preferences"
+  //         }
+  //       ]
+  if (conv.data.preferences.length === 0){
+    var parameters = `{"inputs": [
+      {
+        "rawInputs": [
+          {
+            "query": "preferences"
+          }
+        ]}]}`
+    conv.followup("EMPTY", JSON.parse(parameters) );
+  } else {
+    conv.ask("I've updated your preferences to " + conv.data.preferences + ". Would you like to remove anymore preferences?");
+    conv.ask(new Suggestions('yes', 'no'));
+  }
 });
 
 
