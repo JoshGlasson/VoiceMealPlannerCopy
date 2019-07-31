@@ -218,6 +218,16 @@ app.intent("Preferences",(conv, {preferences}) => {
   conv.ask(new Suggestions('yes', 'no'));
 });
 
+app.intent("Default Welcome Intent - preferences - remove - value", (conv, {preferences}) => {
+  conv.data.preferences = conv.data.preferences.filter(function(value, index, arr){
+    return value != preferences;
+  });
+  dbutils.savePrefences(conv,userId);
+  conv.ask("I've updated your preferences to " + conv.data.preferences + ". Would you like to remove anymore preferences?");
+  conv.ask(new Suggestions('yes', 'no'));
+});
+
+
 const expressApp = express().use(bodyParser.json());
 
 expressApp.post('/api/test', app);
