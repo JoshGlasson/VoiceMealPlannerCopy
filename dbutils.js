@@ -46,13 +46,13 @@ exports.isMeal = function (conv, userId, date){
     if (data) {
       let dbFood = []
       for (let i = 0; i < data.meals.length; i++) {
-        if(data.meals[i].date === (new Date(conv.data.date).toDateString())){
+        if(data.meals[i].date === (new Date(date).toDateString())){
           dbFood = data.meals[i].recipe
           break}
         }
-      return dbFood;
-    } else {
-      return false;
+        return dbFood;
+      } else {
+        return false;
     }
   });
 }
@@ -86,3 +86,5 @@ exports.savePrefences = function (conv, userId) {
       }
     });
 }
+
+

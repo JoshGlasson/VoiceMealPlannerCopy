@@ -263,6 +263,28 @@ app.intent("Review_Food_Diary - date", (conv, {date}) => {
   });
 })
 
+app.intent("Review_Food_Diary - time period", (conv, {duration}) => {
+  return this.foodDiaryCheck(userId, duration.amount)
+  .then(function(result){
+  log.info(result)
+  conv.close(result.toString())
+  })
+})
+
+exports.foodDiaryCheck = function (userId, days){
+    let today = new Date();
+    let diaryArray = [];
+    for (let i = 0; i < days; i++) {
+      let newDate = new Date();
+      newDate.setDate(today.getDate() + i);
+      diaryArray.push(dbutils.isMeal(null, userId, newDate));
+    }
+    return Promise.all(diaryArray)
+    .then(function(values){
+      return values;
+    })
+}
+
 
 const expressApp = express().use(bodyParser.json());
 
