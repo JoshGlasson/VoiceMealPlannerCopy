@@ -9,7 +9,8 @@ const {
         Image,
         Button,
         BrowseCarousel,
-        BrowseCarouselItem
+        BrowseCarouselItem,
+        SimpleResponse
       } = require('actions-on-google');
 
 const helpers = require('./helpers');
@@ -257,13 +258,13 @@ app.intent("Review_Food_Diary - date", (conv, {date}) => {
                     alt: `Image of ${foodInfo.recipe}`,
           }),
         }))
-        conv.ask(`\nDo you want to check any other date?`)
-        conv.ask(new Suggestions('yes', 'no')); 
+        conv.ask(`\nDo you want to change, remove this or check another date?`)
+        conv.ask(new Suggestions('change', 'remove', "other date")); 
       })
     } else {
       conv.ask(`You have nothing planned for ${new Date(date).toDateString()}. `)
-      conv.ask(`Do you want to check any other date?`)
-      conv.ask(new Suggestions('yes', 'no'));
+      conv.ask(`Do you want to add a meal on that date or check another date?`)
+      conv.ask(new Suggestions('add meal', 'another date'));
     }
   });
 })
@@ -271,18 +272,31 @@ app.intent("Review_Food_Diary - date", (conv, {date}) => {
 app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
   let days = 0
   if(duration) {
-    days = duration.amount
+    duration.amount > 7 ? days = 7 : days = duration.amount
   } else if(week) {
     days = 7
   } 
   return dbutils.foodDiaryCheck(userId, days)
   .then(function(result){
     let string = ""
+    let speech = ""
     for(let meal of result) {
-      string = string + `You have ${meal['recipe'] === "false" ? meal['recipe'] : "no meal"} in the ${new Date(meal['date']).toDateString()}\n`
+      log.info(`RECIPEM: ${meal['recipe']}`)
+      if (!meal['recipe'].toString().includes("false")) {
+        string = string + `You have ${meal['recipe']} on ${new Date(meal['date']).toDateString()}\n`
+        speech = speech + `You have ${meal['recipe']} on ${new Date(meal['date']).toDateString()} <break time="500ms"/>`
+      }
     }
-    conv.ask(string)
-    conv.ask("\n" + `Do you want to check any other date?`)
+    if(string === "") {
+      conv.ask("You have nothing planned for this period. Do you want to check any other date?")
+    } else {
+    conv.ask(new SimpleResponse({
+      speech: '<speak>' + speech + ' Do you want to check any other date?</speak>',
+      text: string + ' Do you want to check any other date?'  
+    }))
+    }
+      // '<speak>' + string + ' Do you want to check any other date?</speak>')
+    // conv.ask(`/\nDo you want to check any other date?`)
     conv.ask(new Suggestions('yes', 'no')); 
   })
 })

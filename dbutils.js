@@ -63,7 +63,11 @@ exports.loadPrefences = function (userId) {
   return collection.findOne({ "userId": userId})
   .then(function(data) {
     if (data) {
-      return data.preferences;
+        if(data.preferences === undefined) {
+          return []
+        } else {
+            return data.preferences;
+        }
     } else {
       return [];
     }
