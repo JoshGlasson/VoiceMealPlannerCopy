@@ -89,6 +89,12 @@ app.intent('Meal_Rejected', (conv) => {
   return countCheck(conv)
 });
 
+app.intent('Keep_Current_Meal', (conv) => {
+  conv.data.date = false;
+  conv.ask("Ok, would you like to save this for a different date, or start again?")
+  conv.ask(new Suggestions('new date', 'main menu'));
+});
+
 app.intent('Meal_Accepted', (conv) => {
   if(!conv.data.date){
     conv.ask("What day do you want this meal on?")
@@ -100,11 +106,8 @@ app.intent('Meal_Accepted', (conv) => {
 app.intent('Replace_Current_Meal', (conv) => {
   let date = conv.data.date; 
   dbutils.updateRecipeInDb(conv, conv.data.userId, date);
+  conv.data.date = false; 
   conv.close(`I updated your meal choice for ${new Date(date).toDateString()}. I hope its delicious, goodbye!`)
-});
-
-app.intent('Keep_Current_Meal', (conv) => {
-  conv.close("Ok, I haven't changed anything. Goodbye!")
 });
 
 app.intent('Set_Date', (conv, {date}) => {
@@ -159,6 +162,7 @@ function replaceCheck(conv, date){
       conv.ask(new Suggestions('yes', 'no'))})  
     } else {
       dbutils.addToDb(conv, conv.data.userId, date)
+      conv.data.date = false;
       conv.close(`I have saved this for ${new Date(date).toDateString()}. Enjoy your meal, goodbye!`)
   }
 })}
