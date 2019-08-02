@@ -256,34 +256,38 @@ app.intent("Review_Food_Diary - date", (conv, {date}) => {
             url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
                     alt: `Image of ${foodInfo.recipe}`,
           }),
-        }))})
+        }))
+        conv.ask(`\nDo you want to check any other date?`)
+        conv.ask(new Suggestions('yes', 'no')); 
+      })
     } else {
-      conv.ask(`You have nothing planned for ${new Date(date).toDateString()}`)
+      conv.ask(`You have nothing planned for ${new Date(date).toDateString()}. `)
+      conv.ask(`Do you want to check any other date?`)
+      conv.ask(new Suggestions('yes', 'no'));
     }
   });
 })
 
-app.intent("Review_Food_Diary - time period", (conv, {duration}) => {
-  return this.foodDiaryCheck(userId, duration.amount)
+app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
+  let days = 0
+  if(duration) {
+    days = duration.amount
+  } else if(week) {
+    days = 7
+  } 
+  return dbutils.foodDiaryCheck(userId, days)
   .then(function(result){
-  log.info(result)
-  conv.close(result.toString())
+    let string = ""
+    for(let meal of result) {
+      string = string + `You have ${meal['recipe'] === "false" ? meal['recipe'] : "no meal"} in the ${new Date(meal['date']).toDateString()}\n`
+    }
+    conv.ask(string)
+    conv.ask("\n" + `Do you want to check any other date?`)
+    conv.ask(new Suggestions('yes', 'no')); 
   })
 })
 
-exports.foodDiaryCheck = function (userId, days){
-    let today = new Date();
-    let diaryArray = [];
-    for (let i = 0; i < days; i++) {
-      let newDate = new Date();
-      newDate.setDate(today.getDate() + i);
-      diaryArray.push(dbutils.isMeal(null, userId, newDate));
-    }
-    return Promise.all(diaryArray)
-    .then(function(values){
-      return values;
-    })
-}
+
 
 
 const expressApp = express().use(bodyParser.json());

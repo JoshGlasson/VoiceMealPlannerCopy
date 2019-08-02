@@ -87,4 +87,21 @@ exports.savePrefences = function (conv, userId) {
     });
 }
 
-
+exports.foodDiaryCheck = function (userId, days){
+  let today = new Date();
+  let diaryArray = [];
+  let dates = []
+  for (let i = 0; i < days; i++) {
+    let newDate = new Date();
+    dates.push(newDate.setDate(today.getDate() + i));
+    diaryArray.push(this.isMeal(null, userId, newDate));
+  }
+  return Promise.all(diaryArray)
+  .then(function(values){
+    let res = []
+    for(let i in values) {
+      res.push({'recipe': values[i], 'date': dates[i]})
+    }
+    return res;
+  })
+}
