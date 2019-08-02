@@ -18,7 +18,6 @@ const dbutils = require('./dbutils');
 const apiSearch = require('./apiCall');
 const bunyan = require('bunyan');
 const log = bunyan.createLogger({name: "tmp"});
-let userId = null;
 
 const port = process.env.PORT || 4567;
 
@@ -34,6 +33,7 @@ app.intent('Default Welcome Intent', (conv) => {
   conv.data.date = false;
   conv.data.mealData = {};
   conv.data.preferences = [];
+  conv.data.userId = null;
 
   if (!googleName) {
     conv.ask(new Permission({
@@ -41,9 +41,9 @@ app.intent('Default Welcome Intent', (conv) => {
       permissions: 'NAME',
     }));
   } else {
-    userId = helpers.checkUserId(conv, userId);
+    conv.data.userId = helpers.checkUserId(conv, conv.data.userId);
 
-    return dbutils.loadPrefences(userId).then((response) => {
+    return dbutils.loadPrefences(conv.data.userId).then((response) => {
       conv.data.preferences = response
       conv.ask(`Hi again, ${googleName}. Would you like to plan a meal, manage your preferences or review food diary?`);
       conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary' ));
@@ -54,11 +54,11 @@ app.intent('Default Welcome Intent', (conv) => {
 app.intent('actions_intent_PERMISSION', (conv, params, permissionGranted) => {
   if (!permissionGranted) {
     conv.ask(`OK, no worries. Would you like to plan a meal, manage your preferences or review food diary?`);
-    userId = helpers.checkUserId(conv, userId);
+    conv.data.userId = helpers.checkUserId(conv, conv.data.userId);
     conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
   } else {
     conv.user.storage.userName = conv.user.name.display;
-    userId = helpers.checkUserId(conv, userId);
+    conv.data.userId = helpers.checkUserId(conv, conv.data.userId);
     conv.ask(`Thanks, ${conv.user.storage.userName}. ` +
       `Would you like to plan a meal, manage your preferences or review food diary`);
     conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
@@ -99,7 +99,7 @@ app.intent('Meal_Accepted', (conv) => {
 
 app.intent('Replace_Current_Meal', (conv) => {
   let date = conv.data.date; 
-  dbutils.updateRecipeInDb(conv, userId, date);
+  dbutils.updateRecipeInDb(conv, conv.data.userId, date);
   conv.close(`I updated your meal choice for ${new Date(date).toDateString()}. I hope its delicious, goodbye!`)
 });
 
@@ -128,7 +128,7 @@ function countCheck(conv, food, food1){
 
 function replaceCheck(conv, date){
   log.info("CHECK DB")
-  return dbutils.isMeal(conv, userId, date)
+  return dbutils.isMeal(conv, conv.data.userId, date)
   .then(function(data) {
     log.info("INFO BACK FROM DB")
     if (data) {
@@ -158,7 +158,7 @@ function replaceCheck(conv, date){
         }));
       conv.ask(new Suggestions('yes', 'no'))})  
     } else {
-      dbutils.addToDb(conv, userId, date)
+      dbutils.addToDb(conv, conv.data.userId, date)
       conv.close(`I have saved this for ${new Date(date).toDateString()}. Enjoy your meal, goodbye!`)
   }
 })}
@@ -208,7 +208,7 @@ app.intent("Preferences",(conv, {preferences}) => {
   log.info("Preferences before" + conv.data.preferences)
   if (!conv.data.preferences.includes(preferences)){
     conv.data.preferences.push(preferences);
-    dbutils.savePrefences(conv,userId);
+    dbutils.savePrefences(conv, conv.data.userId);
     log.info("Preferences after" + conv.data.preferences)
   conv.ask("Got it, saved " + conv.data.preferences + ". Would you like to set anymore preferences?");
   } else {
@@ -221,7 +221,7 @@ app.intent("Default Welcome Intent - preferences - remove - value", (conv, {pref
   conv.data.preferences = conv.data.preferences.filter(function(value){
     return value != preferences;
   });
-  dbutils.savePrefences(conv,userId);
+  dbutils.savePrefences(conv, conv.data.userId);
   if (conv.data.preferences.length === 0){
       conv.followup("EMPTY", JSON.parse(helpers.inputParameters("preferences")) );
   } 
@@ -233,7 +233,7 @@ app.intent("Default Welcome Intent - preferences - remove - value", (conv, {pref
 
 app.intent("Review_Food_Diary - date", (conv, {date}) => {
   conv.data.date = date;
-  return dbutils.isMeal(conv, userId, date)
+  return dbutils.isMeal(conv, conv.data.userId, date)
   .then(function(data) {
     log.info("INFO BACK FROM DB")
     if (data) {
@@ -277,7 +277,7 @@ app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
   } else if(week) {
     days = 7
   } 
-  return dbutils.foodDiaryCheck(userId, days)
+  return dbutils.foodDiaryCheck(conv.data.userId, days)
   .then(function(result){
     let string = ""
     let speech = ""
@@ -302,7 +302,7 @@ app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
 })
 
 app.intent('Review_Food_Diary - date - remove', (conv) => {
-  dbutils.deleteMeal(conv, userId, conv.data.date);
+  dbutils.deleteMeal(conv, conv.data.userId, conv.data.date);
   conv.ask("I have removed this meal. Do you want to check any other date?")
   conv.ask(new Suggestions('yes', 'no')); 
 });
