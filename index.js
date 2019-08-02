@@ -232,6 +232,7 @@ app.intent("Default Welcome Intent - preferences - remove - value", (conv, {pref
 });
 
 app.intent("Review_Food_Diary - date", (conv, {date}) => {
+  conv.data.date = date;
   return dbutils.isMeal(conv, userId, date)
   .then(function(data) {
     log.info("INFO BACK FROM DB")
@@ -258,8 +259,8 @@ app.intent("Review_Food_Diary - date", (conv, {date}) => {
                     alt: `Image of ${foodInfo.recipe}`,
           }),
         }))
-        conv.ask(`\nDo you want to change, remove this or check another date?`)
-        conv.ask(new Suggestions('change', 'remove', "other date")); 
+        conv.ask(`Do you want to change, remove this or check another date?`)
+        conv.ask(new Suggestions('change', 'remove', "another date")); 
       })
     } else {
       conv.ask(`You have nothing planned for ${new Date(date).toDateString()}. `)
@@ -300,7 +301,11 @@ app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
   })
 })
 
-
+app.intent('Review_Food_Diary - date - remove', (conv) => {
+  dbutils.deleteMeal(conv, userId, conv.data.date);
+  conv.ask("I have removed this meal. Do you want to check any other date?")
+  conv.ask(new Suggestions('yes', 'no')); 
+});
 
 
 const expressApp = express().use(bodyParser.json());

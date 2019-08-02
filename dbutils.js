@@ -109,3 +109,19 @@ exports.foodDiaryCheck = function (userId, days){
     return res;
   })
 }
+
+exports.deleteMeal = function (conv, userId, date){
+  var collection = db.collection('testcollection'); 
+
+  collection.findOneAndUpdate(
+    { "userId": userId },
+    { $pull : {
+        "meals": {date: new Date(date).toDateString()}
+      }
+    },
+    function(err, response){
+      if (!err) {
+        log.info("REMOVE "+ response)
+      }
+    });
+}
