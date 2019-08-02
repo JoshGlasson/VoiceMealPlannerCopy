@@ -283,8 +283,9 @@ app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
     for(let meal of result) {
       log.info(`RECIPEM: ${meal['recipe']}`)
       if (!meal['recipe'].toString().includes("false")) {
+        // <say-as interpret-as="date" format="dm">10-9</say-as>
         string = string + `You have ${meal['recipe']} on ${new Date(meal['date']).toDateString()}\n`
-        speech = speech + `You have ${meal['recipe']} on ${new Date(meal['date']).toDateString()} <break time="500ms"/>`
+        speech = speech + `You have ${meal['recipe']} on <say-as interpret-as="date" format="dm"> ${new Date(meal['date']).toDateString()} </say-as> <break time="500ms"/>`
       }
     }
     if(string === "") {
@@ -295,8 +296,6 @@ app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
       text: string + ' Do you want to check any other date?'  
     }))
     }
-      // '<speak>' + string + ' Do you want to check any other date?</speak>')
-    // conv.ask(`/\nDo you want to check any other date?`)
     conv.ask(new Suggestions('yes', 'no')); 
   })
 })
