@@ -23,7 +23,7 @@ const port = process.env.PORT || 4567;
 
 const app = dialogflow({debug: true});
 
-app.intent('Default Welcome Intent', (conv) => {
+app.intent('Default Welcome Intent', async (conv) => {
   const googleName = conv.user.storage.userName;
   log.info('Stored Name ' + googleName)
   conv.data.food = [];
@@ -42,12 +42,9 @@ app.intent('Default Welcome Intent', (conv) => {
     }));
   } else {
     conv.data.userId = helpers.checkUserId(conv, conv.data.userId);
-
-    return dbutils.loadPrefences(conv.data.userId).then((response) => {
-      conv.data.preferences = response
-      conv.ask(`Hi again, ${googleName}. Would you like to plan a meal, manage your preferences or review food diary?`);
-      conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary' ));
-    });
+    conv.data.preferences = await dbutils.loadPrefences(conv.data.userId)
+    conv.ask(`Hi again, ${googleName}. Would you like to plan a meal, manage your preferences or review food diary?`);
+    conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary' ));
   }
 });
 
@@ -117,59 +114,51 @@ app.intent('Set_Date', (conv, {date}) => {
   return replaceCheck(conv, date)
 });
 
-function countCheck(conv, food, food1){
+async function countCheck(conv, food, food1){
   if (conv.data.count === 0) {
-  return apiSearch.searchRecipes(`${food} ${food1}`,conv.data.preferences)
-  .then(function(result){
-    conv.data.food = result
-    log.info("COUNT 0" + conv.data.food.length)
-    return showRecipe(conv)
-  })
-  } else {
-    log.info("COUNT > 0" + conv.data.food.length)
-      return showRecipe(conv)
-  }
+    conv.data.food = await apiSearch.searchRecipes(`${food} ${food1}`,conv.data.preferences)
+  } 
+  return showRecipe(conv)
 }
 
-function replaceCheck(conv, date){
+async function replaceCheck(conv, date){
   log.info("CHECK DB")
-  return dbutils.isMeal(conv, conv.data.userId, date)
-  .then(function(data) {
-    log.info("INFO BACK FROM DB")
-    if (data) {
-      return apiSearch.getRecipeInfo(data)
-      .then(function(foodInfo){
-        log.info("FOUND IN DB "+ foodInfo)
-        conv.ask(`You already have a meal for this date, would you like to replace ${foodInfo.recipe} with ${conv.data.foodChoice.recipe}?`)
-        conv.ask(new BrowseCarousel({
-          items: [
-            new BrowseCarouselItem({
-              title: foodInfo.recipe,
-              url: `https://realfood.tesco.com${foodInfo.details.href}`,
-              image: new Image({
-                url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
-                alt: `Image of ${foodInfo.recipe}`,
-              }),
-            }),
-            new BrowseCarouselItem({
-              title: conv.data.foodChoice.recipe,
-              url: `https://realfood.tesco.com${conv.data.foodChoice.details.href}`,
-              image: new Image({
-                url: `https://realfood.tesco.com${conv.data.foodChoice.details.imageLink}`,
-                alt: `Image of ${conv.data.foodChoice.recipe}`,
-              }),
-            }),
-          ],
-        }));
-      conv.ask(new Suggestions('yes', 'no'))})  
-    } else {
-      dbutils.addToDb(conv, conv.data.userId, date)
-      conv.data.date = false;
-      conv.data.foodChoice = [];
-      conv.ask(`I have saved this for ${new Date(date).toDateString()}. Would you like to plan another meal, manage your preferences or review food diary?`)
-      conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
+  let mealName = await dbutils.isMeal(conv, conv.data.userId, date)
+
+  log.info("INFO BACK FROM DB")
+  if (mealName) {
+    let foodInfo = await apiSearch.getRecipeInfo(mealName) 
+    conv.ask(`You already have a meal for this date, would you like to replace ${foodInfo.recipe} with ${conv.data.foodChoice.recipe}?`)
+
+    conv.ask(new BrowseCarousel({
+      items: [
+        new BrowseCarouselItem({
+          title: foodInfo.recipe,
+          url: `https://realfood.tesco.com${foodInfo.details.href}`,
+          image: new Image({
+            url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
+            alt: `Image of ${foodInfo.recipe}`,
+          }),
+        }),
+        new BrowseCarouselItem({
+          title: conv.data.foodChoice.recipe,
+          url: `https://realfood.tesco.com${conv.data.foodChoice.details.href}`,
+          image: new Image({
+            url: `https://realfood.tesco.com${conv.data.foodChoice.details.imageLink}`,
+            alt: `Image of ${conv.data.foodChoice.recipe}`,
+          }),
+        }),
+      ],
+    }));
+    conv.ask(new Suggestions('yes', 'no')) 
+  } else {
+    dbutils.addToDb(conv, conv.data.userId, date)
+    conv.data.date = false;
+    conv.data.foodChoice = [];
+    conv.ask(`I have saved this for ${new Date(date).toDateString()}. Would you like to plan another meal, manage your preferences or review food diary?`)
+    conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
   }
-})}
+}
 
 function showRecipe(conv){
   if (conv.data.food.length > 0) {
@@ -196,7 +185,7 @@ function showRecipe(conv){
     conv.ask("Let me know if you want this meal, or if you want more information.");
     conv.ask(new Suggestions('yes', 'no', 'more information'));
     conv.data.count++
-    return 
+    // return 
   } else {
     conv.ask("That's all the results, please search for something else");
   }
@@ -239,85 +228,83 @@ app.intent("Default Welcome Intent - preferences - remove - value", (conv, {pref
   }
 });
 
-app.intent("Review_Food_Diary - date", (conv, {date}) => {
+app.intent("Review_Food_Diary - date", async (conv, {date}) => {
   conv.data.date = date;
-  return dbutils.isMeal(conv, conv.data.userId, date)
-  .then(function(data) {
-    log.info("INFO BACK FROM DB")
-    if (data) {
-      log.info(data)
-      return apiSearch.getRecipeInfo(data)
-      .then(function(foodInfo){
-        log.info("FOUND IN DB "+ foodInfo)
-        conv.ask(`On ${new Date(date).toDateString()} you have ${foodInfo.recipe}`)
-        conv.ask(new BasicCard({
-          title: foodInfo.recipe,
-          buttons: new Button({
-            title: 'View on Tesco Realfood',
-            url: `https://realfood.tesco.com${foodInfo.details.href}`,
-          }),
-          subtitle: foodInfo.details.summary,
-          text: (foodInfo.details.cookingTime === undefined ? "" : `${foodInfo.details.cookingTime}. `) 
-          + (foodInfo.details.serves === "False" ? "" : `Serves ${foodInfo.details.serves}. `) 
-          + (foodInfo.details.calories === "False" ? "" : `${foodInfo.details.calories} Calories per Serving. `) 
-          + (foodInfo.details.freezable === "False" ? "" : "Freezable" + ". ") 
-          + (foodInfo.details.healthy === "False" ? "" : "Healthy" + ". "), 
-          image: new Image({
-            url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
-                    alt: `Image of ${foodInfo.recipe}`,
-          }),
-        }))
-        conv.ask(`Do you want to change, remove this or check another date?`)
-        conv.ask(new Suggestions('change', 'remove', "another date")); 
-      })
-    } else {
-      conv.ask(`You have nothing planned for ${new Date(date).toDateString()}. `)
-      conv.ask(`Do you want to add a meal on that date or check another date?`)
-      conv.ask(new Suggestions('add meal', 'another date'));
-    }
-  });
+  let mealName = await dbutils.isMeal(conv, conv.data.userId, date)
+  
+  if (mealName) {
+    let foodInfo = await apiSearch.getRecipeInfo(mealName)
+    conv.ask(`On ${new Date(date).toDateString()} you have ${foodInfo.recipe}`)
+    conv.ask(new BasicCard({
+      title: foodInfo.recipe,
+      buttons: new Button({
+        title: 'View on Tesco Realfood',
+        url: `https://realfood.tesco.com${foodInfo.details.href}`,
+      }),
+      subtitle: foodInfo.details.summary,
+      text: (foodInfo.details.cookingTime === undefined ? "" : `${foodInfo.details.cookingTime}. `) 
+      + (foodInfo.details.serves === "False" ? "" : `Serves ${foodInfo.details.serves}. `) 
+      + (foodInfo.details.calories === "False" ? "" : `${foodInfo.details.calories} Calories per Serving. `) 
+      + (foodInfo.details.freezable === "False" ? "" : "Freezable" + ". ") 
+      + (foodInfo.details.healthy === "False" ? "" : "Healthy" + ". "), 
+      image: new Image({
+        url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
+                alt: `Image of ${foodInfo.recipe}`,
+      }),
+    }))
+    conv.ask(`Do you want to change, remove this or check another date?`)
+    conv.ask(new Suggestions('change', 'remove', "another date")); 
+    
+  } else {
+    conv.ask(`You have nothing planned for ${new Date(date).toDateString()}. `)
+    conv.ask(`Do you want to add a meal on that date or check another date?`)
+    conv.ask(new Suggestions('add meal', 'another date'));
+  }
+ 
 })
 
-app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
+app.intent("Review_Food_Diary - time period", async (conv, {duration, week}) => {
   let days = 0
   if(duration) {
     duration.amount > 7 ? days = 7 : (duration.unit === "wk" ? days = 7: days = duration.amount)
   } else if(week) {
     days = 7
   } 
-  return dbutils.foodDiaryCheck(conv.data.userId, days)
-  .then(async function(result){
-    let string = ""
-    let speech = ""
-    let carouselItems = [];
-    let diaryCard = null;
+  let result = await dbutils.foodDiaryCheck(conv.data.userId, days)
+  
+  let string = ""
+  let speech = ""
+  let carouselItems = [];
+  let diaryCard = [];
 
-    for(let meal of result) {
-      if (!meal['recipe'].toString().includes("false")) {
-        // <say-as interpret-as="date" format="dm">10-9</say-as>
-        string = string + `You have ${meal['recipe']} on ${new Date(meal['date']).toDateString()}\n`
-        speech = speech + `You have ${meal['recipe']} on <say-as interpret-as="date" format="dm"> ${new Date(meal['date']).toDateString()} </say-as> <break time="500ms"/>`
-        carouselItems.push(await foodDiaryCarousel(meal));
-        diaryCard = await foodDiaryCard(meal['recipe']);
-      }
+  for(let meal of result) {
+    if (!meal['recipe'].toString().includes("false")) {
+      // <say-as interpret-as="date" format="dm">10-9</say-as>
+      string = string + `You have ${meal['recipe']} on ${new Date(meal['date']).toDateString()}\n`
+      speech = speech + `You have ${meal['recipe']} on <say-as interpret-as="date" format="dm"> ${new Date(meal['date']).toDateString()} </say-as> <break time="500ms"/>`
+      carouselItems.push(foodDiaryCarousel(meal));
+      diaryCard.push(foodDiaryCard(meal['recipe']));
     }
-    if(string === "") {
-      conv.ask("You have nothing planned for this period. Do you want to check any other date?")
+  }
+  carouselItems = await Promise.all(carouselItems)
+  diaryCard = await Promise.all(diaryCard)
+  if(string === "") {
+    conv.ask("You have nothing planned for this period. Do you want to check any other date?")
+  } else {
+    conv.ask(new SimpleResponse({
+      speech: '<speak>' + speech + ' Do you want to check any other date?</speak>',
+      text: string + ' Do you want to check any other date?'  
+    }))
+    if(carouselItems.length > 1){
+      conv.ask(new BrowseCarousel({
+        items: carouselItems,
+      }));
     } else {
-      conv.ask(new SimpleResponse({
-        speech: '<speak>' + speech + ' Do you want to check any other date?</speak>',
-        text: string + ' Do you want to check any other date?'  
-      }))
-      if(carouselItems.length > 1){
-        conv.ask(new BrowseCarousel({
-          items: carouselItems,
-        }));
-      } else {
-        conv.ask(diaryCard)
-    }
-      conv.ask(new Suggestions('yes', 'no')); 
-    }
-  })
+      conv.ask(diaryCard[0])
+  }
+    conv.ask(new Suggestions('yes', 'no')); 
+  }
+  
 })
 
 
@@ -351,46 +338,42 @@ app.intent('Meal_Planner - more information', (conv) => {
 });
 
 
-function foodDiaryCarousel(meal){
-  return apiSearch.getRecipeInfo(meal['recipe'])
-    .then(function(foodInfo){
-      return new BrowseCarouselItem({
-        title: new Date(meal['date']).toDateString(),
-        description: foodInfo.recipe,
-        url: `https://realfood.tesco.com${foodInfo.details.href}`,
-        image: new Image({
-          url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
-          alt: `Image of ${foodInfo.recipe}`,
-        }),
-    });
-  })
-}
-
-function foodDiaryCard(meal){
-  return apiSearch.getRecipeInfo(meal)
-  .then(function(foodInfo){
-    return new BasicCard({
-      title: foodInfo.recipe,
-      buttons: new Button({
-        title: 'View on Tesco Realfood',
-        url: `https://realfood.tesco.com${foodInfo.details.href}`,
-      }),
-      subtitle: foodInfo.details.summary,
-      text: (foodInfo.details.cookingTime === undefined ? "" : `${foodInfo.details.cookingTime}. `) 
-      + (foodInfo.details.serves === "False" ? "" : `Serves ${foodInfo.details.serves}. `) 
-      + (foodInfo.details.calories === "False" ? "" : `${foodInfo.details.calories} Calories per Serving. `) 
-      + (foodInfo.details.freezable === "False" ? "" : "Freezable" + ". ") 
-      + (foodInfo.details.healthy === "False" ? "" : "Healthy" + ". "), 
+async function foodDiaryCarousel(meal){
+  let foodInfo = await apiSearch.getRecipeInfo(meal['recipe'])
+    return new BrowseCarouselItem({
+      title: new Date(meal['date']).toDateString(),
+      description: foodInfo.recipe,
+      url: `https://realfood.tesco.com${foodInfo.details.href}`,
       image: new Image({
         url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
-                alt: `Image of ${foodInfo.recipe}`,
+        alt: `Image of ${foodInfo.recipe}`,
       }),
-    })
+    });
+}
+
+async function foodDiaryCard(meal){
+  let foodInfo = await apiSearch.getRecipeInfo(meal)
+  return new BasicCard({
+    title: foodInfo.recipe,
+    buttons: new Button({
+      title: 'View on Tesco Realfood',
+      url: `https://realfood.tesco.com${foodInfo.details.href}`,
+    }),
+    subtitle: foodInfo.details.summary,
+    text: (foodInfo.details.cookingTime === undefined ? "" : `${foodInfo.details.cookingTime}. `) 
+    + (foodInfo.details.serves === "False" ? "" : `Serves ${foodInfo.details.serves}. `) 
+    + (foodInfo.details.calories === "False" ? "" : `${foodInfo.details.calories} Calories per Serving. `) 
+    + (foodInfo.details.freezable === "False" ? "" : "Freezable" + ". ") 
+    + (foodInfo.details.healthy === "False" ? "" : "Healthy" + ". "), 
+    image: new Image({
+      url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
+              alt: `Image of ${foodInfo.recipe}`,
+    }),
   })
 }
 
 const expressApp = express().use(bodyParser.json());
-
+dbutils.connectDB();
 expressApp.post('/api/test', app);
 expressApp.listen(port);
 

@@ -3,12 +3,18 @@ const log = bunyan.createLogger({name: "info_dbutils"});
 
 var mongoClient = require("mongodb").MongoClient;
 var db = {};
-mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw%3D%3D@tmptest.documents.azure.com:10255/?ssl=true", { useNewUrlParser: true },function (err, client) {
-  db = client.db("testdatabase");  
-});
+var collection = null;
+// client = await mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw%3D%3D@tmptest.documents.azure.com:10255/?ssl=true", { useNewUrlParser: true },function (err, client) {
+//   db = client.db("testdatabase");  
+// });
+
+exports.connectDB = async function() {
+  let client = await mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw%3D%3D@tmptest.documents.azure.com:10255/?ssl=true", { useNewUrlParser: true })
+  db = await client.db("testdatabase");
+  collection =  await db.collection('testcollection');
+}
 
 exports.updateRecipeInDb = function (conv, userId, date){
-  var collection = db.collection('testcollection'); 
 
   collection.updateOne(
     { "userId": userId , "meals.date": new Date(date).toDateString() },
@@ -22,7 +28,6 @@ exports.updateRecipeInDb = function (conv, userId, date){
 }
 
 exports.addToDb = function (conv, userId, date){
-  var collection = db.collection('testcollection'); 
 
   collection.findOneAndUpdate(
     { "userId": userId },
@@ -38,44 +43,37 @@ exports.addToDb = function (conv, userId, date){
     });
 }
 
-exports.isMeal = function (conv, userId, date){
-  var collection = db.collection('testcollection'); 
-
-  return collection.findOne({ "userId": userId , "meals.date": new Date(date).toDateString() })
-  .then(function(data) {
-    if (data) {
-      let dbFood = []
-      for (let i = 0; i < data.meals.length; i++) {
-        if(data.meals[i].date === (new Date(date).toDateString())){
-          dbFood = data.meals[i].recipe
-          break}
-        }
-        return dbFood;
-      } else {
-        return false;
+exports.isMeal = async function (conv, userId, date){
+  let data = await collection.findOne({ "userId": userId , "meals.date": new Date(date).toDateString() })
+  if (data) {
+    let dbFood = []
+    for (let meal of data.meals) {
+      if(meal.date === (new Date(date).toDateString())){
+        dbFood = meal.recipe
+        break
+      }
     }
-  });
+    return dbFood;
+    } else {
+      return false;
+  }
 }
 
-exports.loadPrefences = function (userId) {
-  var collection = db.collection('testcollection'); 
-
-  return collection.findOne({ "userId": userId})
-  .then(function(data) {
-    if (data) {
-        if(data.preferences === undefined) {
-          return []
-        } else {
-            return data.preferences;
-        }
+exports.loadPrefences = async function (userId) {
+  let data = await collection.findOne({ "userId": userId})
+  if (data) {
+    if(data.preferences === undefined) {
+      return []
     } else {
-      return [];
+      return data.preferences;
     }
-  });
+  } else {
+    return [];
+  }
 }
 
 exports.savePrefences = function (conv, userId) {
-  var collection = db.collection('testcollection'); 
+  // var collection = db.collection('testcollection'); 
 
   collection.findOneAndUpdate(
     { "userId": userId },
@@ -91,7 +89,7 @@ exports.savePrefences = function (conv, userId) {
     });
 }
 
-exports.foodDiaryCheck = function (userId, days){
+exports.foodDiaryCheck = async function (userId, days){
   let today = new Date();
   let diaryArray = [];
   let dates = []
@@ -100,19 +98,15 @@ exports.foodDiaryCheck = function (userId, days){
     dates.push(newDate.setDate(today.getDate() + i));
     diaryArray.push(this.isMeal(null, userId, newDate));
   }
-  return Promise.all(diaryArray)
-  .then(function(values){
-    let res = []
-    for(let i in values) {
-      res.push({'recipe': values[i], 'date': dates[i]})
-    }
-    return res;
-  })
+  let mealNames = await Promise.all(diaryArray)
+  let res = []
+  for(let i in mealNames) {
+    res.push({'recipe': mealNames[i], 'date': dates[i]})
+  }
+  return res;
 }
 
 exports.deleteMeal = function (conv, userId, date){
-  var collection = db.collection('testcollection'); 
-
   collection.findOneAndUpdate(
     { "userId": userId },
     { $pull : {
