@@ -290,12 +290,15 @@ app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
     let string = ""
     let speech = ""
     let carouselItems = [];
+    let diaryCard = null;
+
     for(let meal of result) {
       if (!meal['recipe'].toString().includes("false")) {
         // <say-as interpret-as="date" format="dm">10-9</say-as>
         string = string + `You have ${meal['recipe']} on ${new Date(meal['date']).toDateString()}\n`
         speech = speech + `You have ${meal['recipe']} on <say-as interpret-as="date" format="dm"> ${new Date(meal['date']).toDateString()} </say-as> <break time="500ms"/>`
         carouselItems.push(await foodDiaryCarousel(meal));
+        diaryCard = await foodDiaryCard(meal);
       }
     }
     if(string === "") {
@@ -305,9 +308,13 @@ app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
         speech: '<speak>' + speech + ' Do you want to check any other date?</speak>',
         text: string + ' Do you want to check any other date?'  
       }))
-      conv.ask(new BrowseCarousel({
-        items: carouselItems,
-      }));
+      if(carouselItems.length > 1){
+        conv.ask(new BrowseCarousel({
+          items: carouselItems,
+        }));
+      } else {
+        conv.ask(diaryCard)
+    }
       conv.ask(new Suggestions('yes', 'no')); 
     }
   })
@@ -345,7 +352,6 @@ app.intent('Meal_Planner - more information', (conv) => {
 
 
 function foodDiaryCarousel(meal){
-  log.info(meal)
   return apiSearch.getRecipeInfo(meal['recipe'])
     .then(function(foodInfo){
       return new BrowseCarouselItem({
@@ -357,6 +363,29 @@ function foodDiaryCarousel(meal){
           alt: `Image of ${foodInfo.recipe}`,
         }),
     });
+  })
+}
+
+function foodDiaryCard(meal){
+  return apiSearch.getRecipeInfo(meal['recipe'])
+  .then(function(foodInfo){
+    return new BasicCard({
+      title: foodInfo.recipe,
+      buttons: new Button({
+        title: 'View on Tesco Realfood',
+        url: `https://realfood.tesco.com${foodInfo.details.href}`,
+      }),
+      subtitle: foodInfo.details.summary,
+      text: (foodInfo.details.cookingTime === undefined ? "" : `${foodInfo.details.cookingTime}. `) 
+      + (foodInfo.details.serves === "False" ? "" : `Serves ${foodInfo.details.serves}. `) 
+      + (foodInfo.details.calories === "False" ? "" : `${foodInfo.details.calories} Calories per Serving. `) 
+      + (foodInfo.details.freezable === "False" ? "" : "Freezable" + ". ") 
+      + (foodInfo.details.healthy === "False" ? "" : "Healthy" + ". "), 
+      image: new Image({
+        url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
+                alt: `Image of ${foodInfo.recipe}`,
+      }),
+    })
   })
 }
 
