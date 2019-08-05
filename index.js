@@ -104,9 +104,10 @@ app.intent('Meal_Accepted', (conv) => {
 });
 
 app.intent('Replace_Current_Meal', (conv) => {
-  let date = conv.data.date; 
+  let date = conv.data.date;
   dbutils.updateRecipeInDb(conv, conv.data.userId, date);
   conv.data.date = false; 
+  conv.data.foodChoice = [];
   conv.ask(`I have updated your meal on ${new Date(date).toDateString()}. Would you like to plan another meal, manage your preferences or review food diary?`)
   conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
 });
@@ -164,6 +165,7 @@ function replaceCheck(conv, date){
     } else {
       dbutils.addToDb(conv, conv.data.userId, date)
       conv.data.date = false;
+      conv.data.foodChoice = [];
       conv.ask(`I have saved this for ${new Date(date).toDateString()}. Would you like to plan another meal, manage your preferences or review food diary?`)
       conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
   }
@@ -172,9 +174,8 @@ function replaceCheck(conv, date){
 function showRecipe(conv){
   if (conv.data.food.length > 0) {
     helpers.move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
-
     conv.data.foodChoice = conv.data.food.pop();
-    conv.ask("Would you like " + conv.data.foodChoice.recipe);
+    conv.ask("How about " + conv.data.foodChoice.recipe);
     conv.ask(new BasicCard({
       title: conv.data.foodChoice.recipe,
       buttons: new Button({
@@ -192,7 +193,8 @@ function showRecipe(conv){
                 alt: `Image of ${conv.data.foodChoice.recipe}`,
       }),
     }));
-    conv.ask(new Suggestions('yes', 'no'));
+    conv.ask("Let me know if you want this meal, or if you want more information.");
+    conv.ask(new Suggestions('yes', 'no', 'more information'));
     conv.data.count++
     return 
   } else {
@@ -279,33 +281,38 @@ app.intent("Review_Food_Diary - date", (conv, {date}) => {
 app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
   let days = 0
   if(duration) {
-    duration.amount > 7 ? days = 7 : days = duration.amount
+    duration.amount > 7 ? days = 7 : (duration.unit === "wk" ? days = 7: days = duration.amount)
   } else if(week) {
     days = 7
   } 
   return dbutils.foodDiaryCheck(conv.data.userId, days)
-  .then(function(result){
+  .then(async function(result){
     let string = ""
     let speech = ""
+    let carouselItems = [];
     for(let meal of result) {
-      log.info(`RECIPEM: ${meal['recipe']}`)
       if (!meal['recipe'].toString().includes("false")) {
         // <say-as interpret-as="date" format="dm">10-9</say-as>
         string = string + `You have ${meal['recipe']} on ${new Date(meal['date']).toDateString()}\n`
         speech = speech + `You have ${meal['recipe']} on <say-as interpret-as="date" format="dm"> ${new Date(meal['date']).toDateString()} </say-as> <break time="500ms"/>`
+        carouselItems.push(await foodDiaryCarousel(meal));
       }
     }
     if(string === "") {
       conv.ask("You have nothing planned for this period. Do you want to check any other date?")
     } else {
-    conv.ask(new SimpleResponse({
-      speech: '<speak>' + speech + ' Do you want to check any other date?</speak>',
-      text: string + ' Do you want to check any other date?'  
-    }))
+      conv.ask(new SimpleResponse({
+        speech: '<speak>' + speech + ' Do you want to check any other date?</speak>',
+        text: string + ' Do you want to check any other date?'  
+      }))
+      conv.ask(new BrowseCarousel({
+        items: carouselItems,
+      }));
+      conv.ask(new Suggestions('yes', 'no')); 
     }
-    conv.ask(new Suggestions('yes', 'no')); 
   })
 })
+
 
 app.intent('Review_Food_Diary - date - remove', (conv) => {
   dbutils.deleteMeal(conv, conv.data.userId, conv.data.date);
@@ -313,6 +320,45 @@ app.intent('Review_Food_Diary - date - remove', (conv) => {
   conv.ask(new Suggestions('yes', 'no')); 
 });
 
+app.intent('Meal_Planner - more information', (conv) => {
+  let speechText = (conv.data.foodChoice.details.summary === undefined ? "" : `${conv.data.foodChoice.details.summary} <break time="500ms">`)
+    + (conv.data.foodChoice.details.cookingTime === undefined ? "" : `${conv.data.foodChoice.details.cookingTime}. <break time="500ms">`) 
+    + (conv.data.foodChoice.details.serves === "False" ? "" : `Serves ${conv.data.foodChoice.details.serves}. <break time="500ms">`) 
+    + (conv.data.foodChoice.details.calories === "False" ? "" : `${conv.data.foodChoice.details.calories} Calories per Serving. <break time="500ms">`) 
+    + (conv.data.foodChoice.details.freezable === "False" ? "" : 'You can freeze this meal. <break time="500ms">') 
+    + (conv.data.foodChoice.details.healthy === "False" ? "" : 'This meal is healthy. <break time="500ms">')
+
+  let text = (conv.data.foodChoice.details.summary === undefined ? "" : `${conv.data.foodChoice.details.summary}. \n`)
+    + (conv.data.foodChoice.details.cookingTime === undefined ? "" : `${conv.data.foodChoice.details.cookingTime}. \n`) 
+    + (conv.data.foodChoice.details.serves === "False" ? "" : `Serves ${conv.data.foodChoice.details.serves}. \n`) 
+    + (conv.data.foodChoice.details.calories === "False" ? "" : `${conv.data.foodChoice.details.calories} Calories per Serving. \n`) 
+    + (conv.data.foodChoice.details.freezable === "False" ? "" : "Freezable" + '. \n') 
+    + (conv.data.foodChoice.details.healthy === "False" ? "" : "Healthy" + '. \n')
+
+  conv.ask(new SimpleResponse({
+    speech: '<speak>' + speechText + '</speak>',
+    text: text 
+  }))
+  conv.ask(`Would you like ${conv.data.foodChoice.recipe}`)
+  conv.ask(new Suggestions('yes', 'no')); 
+});
+
+
+function foodDiaryCarousel(meal){
+  log.info(meal)
+  return apiSearch.getRecipeInfo(meal['recipe'])
+    .then(function(foodInfo){
+      return new BrowseCarouselItem({
+        title: new Date(meal['date']).toDateString(),
+        description: foodInfo.recipe,
+        url: `https://realfood.tesco.com${foodInfo.details.href}`,
+        image: new Image({
+          url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
+          alt: `Image of ${foodInfo.recipe}`,
+        }),
+    });
+  })
+}
 
 const expressApp = express().use(bodyParser.json());
 
