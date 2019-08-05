@@ -298,7 +298,7 @@ app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
         string = string + `You have ${meal['recipe']} on ${new Date(meal['date']).toDateString()}\n`
         speech = speech + `You have ${meal['recipe']} on <say-as interpret-as="date" format="dm"> ${new Date(meal['date']).toDateString()} </say-as> <break time="500ms"/>`
         carouselItems.push(await foodDiaryCarousel(meal));
-        diaryCard = await foodDiaryCard(meal);
+        diaryCard = await foodDiaryCard(meal['recipe']);
       }
     }
     if(string === "") {
@@ -367,7 +367,7 @@ function foodDiaryCarousel(meal){
 }
 
 function foodDiaryCard(meal){
-  return apiSearch.getRecipeInfo(meal['recipe'])
+  return apiSearch.getRecipeInfo(meal)
   .then(function(foodInfo){
     return new BasicCard({
       title: foodInfo.recipe,
