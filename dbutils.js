@@ -1,16 +1,12 @@
 const bunyan = require('bunyan');
 const log = bunyan.createLogger({name: "info_dbutils"});
-
 var mongoClient = require("mongodb").MongoClient;
-var db = {};
+
 var collection = null;
-// client = await mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw%3D%3D@tmptest.documents.azure.com:10255/?ssl=true", { useNewUrlParser: true },function (err, client) {
-//   db = client.db("testdatabase");  
-// });
 
 exports.connectDB = async function() {
   let client = await mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw%3D%3D@tmptest.documents.azure.com:10255/?ssl=true", { useNewUrlParser: true })
-  db = await client.db("testdatabase");
+  let db = await client.db("testdatabase");
   collection =  await db.collection('testcollection');
 }
 
