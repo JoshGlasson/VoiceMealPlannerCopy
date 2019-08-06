@@ -45,7 +45,7 @@ app.intent('Default Welcome Intent', (conv) => {
 
     return dbutils.loadPrefences(conv.data.userId).then((response) => {
       conv.data.preferences = response
-      conv.ask(`Hi again, ${googleName}. Would you like to plan a meal, manage your preferences or review food diary?`);
+      conv.ask(`<speak> Hi again, ${googleName}. What would you like to do: <break time="300ms" /> Plan a meal, manage your preferences or review food diary? </speak>`);
       conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary' ));
     });
   }
@@ -53,14 +53,14 @@ app.intent('Default Welcome Intent', (conv) => {
 
 app.intent('actions_intent_PERMISSION', (conv, params, permissionGranted) => {
   if (!permissionGranted) {
-    conv.ask(`OK, no worries. Would you like to plan a meal, manage your preferences or review food diary?`);
+    conv.ask(`<speak>OK, no worries. What would you like to do: <break time="300ms" /> plan a meal, manage your preferences or review food diary?</speak>`);
     conv.data.userId = helpers.checkUserId(conv, conv.data.userId);
     conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
   } else {
     conv.user.storage.userName = conv.user.name.display;
     conv.data.userId = helpers.checkUserId(conv, conv.data.userId);
-    conv.ask(`Thanks, ${conv.user.storage.userName}. ` +
-      `Would you like to plan a meal, manage your preferences or review food diary`);
+    conv.ask(`<speak>Thanks, ${conv.user.storage.userName}. ` +
+      `What would you like to do: <break time="300ms" /> plan a meal, manage your preferences or review food diary<s/speak>`);
     conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
   }
 });
@@ -108,7 +108,7 @@ app.intent('Replace_Current_Meal', (conv) => {
   dbutils.updateRecipeInDb(conv, conv.data.userId, date);
   conv.data.date = false; 
   conv.data.foodChoice = [];
-  conv.ask(`I have updated your meal on ${new Date(date).toDateString()}. Would you like to plan another meal, manage your preferences or review food diary?`)
+  conv.ask(`<speak>I have updated your meal on ${new Date(date).toDateString()}. What would you like to do: <break time="300ms" /> plan another meal, manage your preferences or review food diary?</speak>`)
   conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
 });
 
@@ -166,7 +166,7 @@ function replaceCheck(conv, date){
       dbutils.addToDb(conv, conv.data.userId, date)
       conv.data.date = false;
       conv.data.foodChoice = [];
-      conv.ask(`I have saved this for ${new Date(date).toDateString()}. Would you like to plan another meal, manage your preferences or review food diary?`)
+      conv.ask(`<speak>I have saved this for ${new Date(date).toDateString()}. What would you like to do: <break time="300ms" /> plan another meal, manage your preferences or review food diary?</speak>`)
       conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
   }
 })}
@@ -281,6 +281,7 @@ app.intent("Review_Food_Diary - date", (conv, {date}) => {
 app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
   let days = 0
   if(duration) {
+    log.info("before duration - " + duration.amount + ": " + duration.unit)
     duration.amount > 7 ? days = 7 : (duration.unit === "wk" ? days = 7: days = duration.amount)
   } else if(week) {
     days = 7
