@@ -34,6 +34,7 @@ app.intent('Default Welcome Intent', (conv) => {
   conv.data.mealData = {};
   conv.data.preferences = [];
   conv.data.userId = null;
+  conv.data.cuisine = ["british", "american", "chinese", "french", "greek", "indian", "italian", "mexican", "spanish", "thai"];
 
   if (!googleName) {
     conv.ask(new Permission({
@@ -390,6 +391,19 @@ function foodDiaryCard(meal){
     })
   })
 }
+
+app.intent('Meal_Inspiration', (conv) => {
+  helpers.move(conv.data.cuisine, Math.floor(Math.random()*conv.data.cuisine.length), conv.data.cuisine.length -1);
+  conv.data.cuisineChoiceOptionOne = conv.data.cuisine.pop();
+  helpers.move(conv.data.cuisine, Math.floor(Math.random()*conv.data.cuisine.length), conv.data.cuisine.length -1);
+  conv.data.cuisineChoiceOptionTwo = conv.data.cuisine.pop();
+  conv.ask(`Ok, would you like a ${conv.data.cuisineChoiceOptionOne} or ${conv.data.cuisineChoiceOptionTwo} recipe?`)
+    // TBC
+})
+
+
+
+
 
 const expressApp = express().use(bodyParser.json());
 
