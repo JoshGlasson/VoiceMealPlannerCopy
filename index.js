@@ -278,14 +278,15 @@ app.intent("Review_Food_Diary - date", (conv, {date}) => {
   });
 })
 
-app.intent("Review_Food_Diary - time period", (conv, {duration, week}) => {
+app.intent("Review_Food_Diary - time period", (conv, {duration, week, number}) => {
   let days = 0
   if(duration) {
-    log.info("before duration - " + duration.amount + ": " + duration.unit)
     duration.amount > 7 ? days = 7 : (duration.unit === "wk" ? days = 7: days = duration.amount)
   } else if(week) {
     days = 7
-  } 
+  } else if (number) {
+    parseInt(number) > 7 ? days = 7 : days = parseInt(number)
+  }
   return dbutils.foodDiaryCheck(conv.data.userId, days)
   .then(async function(result){
     let string = ""
