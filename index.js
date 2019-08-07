@@ -22,6 +22,7 @@ const log = bunyan.createLogger({name: "tmp"});
 const port = process.env.PORT || 4567;
 
 const app = dialogflow({debug: true});
+const cuisineArray = ["british", "american", "chinese", "french", "greek", "indian", "italian", "mexican", "spanish", "thai"];
 
 app.intent('Default Welcome Intent', (conv) => {
   const googleName = conv.user.storage.userName;
@@ -34,7 +35,7 @@ app.intent('Default Welcome Intent', (conv) => {
   conv.data.mealData = {};
   conv.data.preferences = [];
   conv.data.userId = null;
-  conv.data.cuisine = ["british", "american", "chinese", "french", "greek", "indian", "italian", "mexican", "spanish", "thai"];
+  conv.data.cuisine = cuisineArray;
 
   if (!googleName) {
     conv.ask(new Permission({
@@ -61,7 +62,7 @@ app.intent('actions_intent_PERMISSION', (conv, params, permissionGranted) => {
     conv.user.storage.userName = conv.user.name.display;
     conv.data.userId = helpers.checkUserId(conv, conv.data.userId);
     conv.ask(`<speak>Thanks, ${conv.user.storage.userName}. ` +
-      `What would you like to do: <break time="300ms" /> plan a meal, manage your preferences or review food diary<s/speak>`);
+      `What would you like to do: <break time="300ms" /> plan a meal, manage your preferences or review food diary</speak>`);
     conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
   }
 });
@@ -118,18 +119,17 @@ app.intent('Set_Date', (conv, {date}) => {
   return replaceCheck(conv, date)
 });
 
-function countCheck(conv, food, food1){
+async function countCheck(conv, food, food1){
   if (conv.data.count === 0) {
-  return apiSearch.searchRecipes(`${food} ${food1}`,conv.data.preferences)
-  .then(function(result){
-    conv.data.food = result
+  conv.data.food = await apiSearch.searchRecipes(`${food} ${food1}`,conv.data.preferences)
+      conv.data.preferences = await dbutils.loadPrefences(conv.data.userId)
     log.info("COUNT 0" + conv.data.food.length)
     return showRecipe(conv)
-  })
   } else {
     log.info("COUNT > 0" + conv.data.food.length)
       return showRecipe(conv)
   }
+  
 }
 
 function replaceCheck(conv, date){
@@ -393,12 +393,31 @@ function foodDiaryCard(meal){
 }
 
 app.intent('Meal_Inspiration', (conv) => {
+  conv.data.count = 0;
+  if (conv.data.cuisine.length === 0) {
+    conv.data.cuisine = cuisineArray;
+  }
   helpers.move(conv.data.cuisine, Math.floor(Math.random()*conv.data.cuisine.length), conv.data.cuisine.length -1);
   conv.data.cuisineChoiceOptionOne = conv.data.cuisine.pop();
   helpers.move(conv.data.cuisine, Math.floor(Math.random()*conv.data.cuisine.length), conv.data.cuisine.length -1);
   conv.data.cuisineChoiceOptionTwo = conv.data.cuisine.pop();
   conv.ask(`Ok, would you like a ${conv.data.cuisineChoiceOptionOne} or ${conv.data.cuisineChoiceOptionTwo} recipe?`)
-    // TBC
+})
+
+app.intent('Meal_Inspiration_Rejected', (conv) => {
+  if (conv.data.cuisine.length === 0) {
+    conv.data.cuisine = cuisineArray;
+  }
+  helpers.move(conv.data.cuisine, Math.floor(Math.random()*conv.data.cuisine.length), conv.data.cuisine.length -1);
+  conv.data.cuisineChoiceOptionOne = conv.data.cuisine.pop();
+  helpers.move(conv.data.cuisine, Math.floor(Math.random()*conv.data.cuisine.length), conv.data.cuisine.length -1);
+  conv.data.cuisineChoiceOptionTwo = conv.data.cuisine.pop();
+  conv.ask(`Ok, would you like a ${conv.data.cuisineChoiceOptionOne} or ${conv.data.cuisineChoiceOptionTwo} recipe?`)
+})
+
+app.intent('Meal_Inspiration - Accepted', (conv, {cuisine}) => {
+  conv.data.preferences.push(cuisine);
+  return countCheck(conv, "", "");
 })
 
 

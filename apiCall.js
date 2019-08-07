@@ -26,8 +26,9 @@ exports.searchRecipes = function(searchTerm, parameters){
     })
 }
 function concatParameters(parameters){
-    let filter = ""
+    let filter = "tags/dinner eq 'True'"
     if(parameters && parameters.length > 0){
+        filter = filter + ' and '
         parameters.forEach(param => {
             filter = `${filter}tags/${param} eq 'True' and `
         });
