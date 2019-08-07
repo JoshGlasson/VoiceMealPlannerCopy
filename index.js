@@ -29,13 +29,13 @@ app.intent('Default Welcome Intent', (conv) => {
   log.info('Stored Name ' + googleName)
   conv.data.food = [];
   conv.data.foodChoice = [];
-  conv.data.info = [];
   conv.data.count = 0;
   conv.data.date = false;
   conv.data.mealData = {};
   conv.data.preferences = [];
   conv.data.userId = null;
   conv.data.cuisine = cuisineArray;
+  conv.data.flag = false;
 
   if (!googleName) {
     conv.ask(new Permission({
@@ -81,6 +81,11 @@ app.intent('actions_intent_NO_INPUT', (conv) => {
 
 app.intent('Meal_Planner', (conv, {food, food1, date}) => {
   conv.data.count = 0
+    if(!conv.data.flag){
+      conv.data.date = false
+    } else {
+      conv.data.flag = false
+    }
   if(date){
     conv.data.date = date
   }
@@ -281,6 +286,11 @@ app.intent("Review_Food_Diary - date", (conv, {date}) => {
       conv.ask(new Suggestions('add meal', 'another date'));
     }
   });
+})
+
+app.intent("Review_Food_Diary - date - add_change meal", (conv) => {
+  conv.data.flag = true
+  conv.ask("Ok. Tell me what you want to eat or ask me for inspiration.")
 })
 
 app.intent("Review_Food_Diary - time period", (conv, {duration, week, number}) => {
