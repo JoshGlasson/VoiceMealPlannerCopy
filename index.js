@@ -331,12 +331,12 @@ app.intent('Review_Food_Diary - date - remove', (conv) => {
 });
 
 app.intent('Meal_Planner - more information', (conv) => {
-  let speechText = (conv.data.foodChoice.details.summary === undefined ? "" : `${conv.data.foodChoice.details.summary} <break time="500ms" />`)
-    + (conv.data.foodChoice.details.cookingTime === undefined ? "" : `${conv.data.foodChoice.details.cookingTime}. <break time="500ms" />`) 
-    + (conv.data.foodChoice.details.serves === "False" ? "" : `Serves ${conv.data.foodChoice.details.serves}. <break time="500ms" />`) 
-    + (conv.data.foodChoice.details.calories === "False" ? "" : `${conv.data.foodChoice.details.calories} Calories per Serving. <break time="500ms" />`) 
-    + (conv.data.foodChoice.details.freezable === "False" ? "" : 'You can freeze this meal. <break time="500ms" />') 
-    + (conv.data.foodChoice.details.healthy === "False" ? "" : 'This meal is healthy. <break time="500ms" />')
+  let speechText = (conv.data.foodChoice.details.summary === undefined ? "" : `${conv.data.foodChoice.details.summary} <break time="500ms"/>`)
+    + (conv.data.foodChoice.details.cookingTime === undefined ? "" : `${conv.data.foodChoice.details.cookingTime}. <break time="500ms"/>`) 
+    + (conv.data.foodChoice.details.serves === "False" ? "" : `Serves ${conv.data.foodChoice.details.serves}. <break time="500ms"/>`) 
+    + (conv.data.foodChoice.details.calories === "False" ? "" : `${conv.data.foodChoice.details.calories} Calories per Serving. <break time="500ms"/>`) 
+    + (conv.data.foodChoice.details.freezable === "False" ? "" : 'You can freeze this meal. <break time="500ms"/>') 
+    + (conv.data.foodChoice.details.healthy === "False" ? "" : 'This meal is healthy. <break time="500ms"/>')
 
   let text = (conv.data.foodChoice.details.summary === undefined ? "" : `${conv.data.foodChoice.details.summary}. \n`)
     + (conv.data.foodChoice.details.cookingTime === undefined ? "" : `${conv.data.foodChoice.details.cookingTime}. \n`) 
