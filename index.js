@@ -220,7 +220,7 @@ app.intent("Default Welcome Intent - preferences", (conv) => {
     conv.ask('You have no preferences set, would you like to add a preference?')
     conv.ask(new Suggestions('add', 'no' ));
   } else {
-    conv.ask(`Your current preferences are ${conv.data.preferences}. Would you like to add or remove any preferences?`)
+    conv.ask(`Your current preferences are ${helpers.readParameters(conv.data.preferences)}. Would you like to add or remove any preferences?`)
     conv.ask(new Suggestions('add', 'remove', 'back'));
   }
 });
@@ -231,7 +231,7 @@ app.intent("Preferences",(conv, {preferences}) => {
     conv.data.preferences.push(preferences);
     dbutils.savePrefences(conv, conv.data.userId);
     log.info("Preferences after" + conv.data.preferences)
-  conv.ask("Got it, saved " + conv.data.preferences + ". Would you like to set anymore preferences?");
+  conv.ask("Got it, saved " + helpers.readParameters(conv.data.preferences) + ". Would you like to set anymore preferences?");
   } else {
     conv.ask("This preference is already set. Would you like to set anymore preferences?")
   }
@@ -247,7 +247,7 @@ app.intent("Default Welcome Intent - preferences - remove - value", (conv, {pref
       conv.followup("EMPTY", JSON.parse(helpers.inputParameters("preferences")) );
   } 
   else {
-    conv.ask("I've updated your preferences to " + conv.data.preferences + ". Would you like to remove anymore preferences?");
+    conv.ask("I've updated your preferences to " + helpers.readParameters(conv.data.preferences) + ". Would you like to remove anymore preferences?");
     conv.ask(new Suggestions('yes', 'no'));
   }
 });
