@@ -47,7 +47,7 @@ app.intent('Default Welcome Intent', (conv) => {
 
     return dbutils.loadPrefences(conv.data.userId).then((response) => {
       conv.data.preferences = response
-      conv.ask(`<speak> Hi again, ${googleName}. What would you like to do: <break time="300ms" /> Plan a meal, manage your preferences or review food diary? </speak>`);
+      conv.ask(`<speak> Hi again, ${googleName}. What would you like to do: <break time="300ms" /> Plan a meal, manage your preferences or review food diary? You can return to this menu by saying home at any time.</speak>`);
       conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary' ));
     });
   }
@@ -55,14 +55,14 @@ app.intent('Default Welcome Intent', (conv) => {
 
 app.intent('actions_intent_PERMISSION', (conv, params, permissionGranted) => {
   if (!permissionGranted) {
-    conv.ask(`<speak>OK, no worries. What would you like to do: <break time="300ms" /> plan a meal, manage your preferences or review food diary?</speak>`);
+    conv.ask(`<speak>OK, no worries. What would you like to do: <break time="300ms" /> plan a meal, manage your preferences or review food diary? You can return to this menu by saying home at any time.</speak>`);
     conv.data.userId = helpers.checkUserId(conv, conv.data.userId);
     conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
   } else {
     conv.user.storage.userName = conv.user.name.display;
     conv.data.userId = helpers.checkUserId(conv, conv.data.userId);
     conv.ask(`<speak>Thanks, ${conv.user.storage.userName}. ` +
-      `What would you like to do: <break time="300ms" /> plan a meal, manage your preferences or review food diary</speak>`);
+      `What would you like to do: <break time="300ms" /> plan a meal, manage your preferences or review food diary? You can return to this menu by saying home at any time.</speak>`);
     conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
   }
 });
@@ -203,12 +203,16 @@ function showRecipe(conv){
                 alt: `Image of ${conv.data.foodChoice.recipe}`,
       }),
     }));
-    conv.ask("Let me know if you want this meal, or if you want more information.");
-    conv.ask(new Suggestions('yes', 'no', 'more information'));
     conv.data.count++
+    if (conv.data.count % 4 === 0){
+      conv.ask("Let me know if you want this meal, or if you want more information. Tell me something else you'd like to eat to search for different recipes.")
+    } else {
+      conv.ask("Let me know if you want this meal, or if you want more information.");
+    }
+    conv.ask(new Suggestions('yes', 'no', 'more information'));
     return 
   } else {
-    conv.ask("That's all the results, please search for something else");
+    conv.ask("That's all the results, please search for something else or say home for main menu");
   }
 }
 
