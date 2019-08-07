@@ -1,6 +1,40 @@
 'use strict'
 const generateUUID = require('uuid/v4');
 
+const preferencesNames = {
+  dairyFree: "dairy free",
+  diabetic: "low sugar",
+  eggFree: "eggs free",
+  glutenFree: "gluten free",
+  healthyRecipies: "healthy",
+  lowCalorie: "low calories",
+  lowFat: "low fat",
+  nutFree: "nut free",
+  vegan: "vegan",
+  vegetarian: "vegetarian",
+  wheatFree: "wheat free"
+}
+
+exports.readParameters = function (parameters){
+  let speech = ""
+  if(parameters && parameters.length > 0){
+    // speech = speech + ' and '
+    for(let index in parameters) {
+      if(parameters.length === 1) {
+        speech = speech + `${preferencesNames[parameters[index]]} `
+      } else {
+          if(index < parameters.length -1) {
+            speech = speech + `${preferencesNames[parameters[index]]}, `
+          } else {
+            speech = speech.slice(0,-2)
+            speech = speech + ` or ${preferencesNames[parameters[index]]}`
+          }
+        }
+    }
+  }
+  return speech
+}
+
 exports.move = function (array, oldIndex, newIndex){
     if(newIndex >= array.length) {
       newIndex = array.length - 1;
@@ -39,3 +73,5 @@ exports.inputParameters = function (input) {
     }]}`
       return parameters
 }
+
+console.log(this.readParameters(["vegan"]))
