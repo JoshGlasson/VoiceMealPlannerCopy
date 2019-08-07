@@ -52,6 +52,7 @@ app.intent('Default Welcome Intent', (conv) => {
     });
   }
 });
+// please remove
 
 app.intent('actions_intent_PERMISSION', (conv, params, permissionGranted) => {
   if (!permissionGranted) {
