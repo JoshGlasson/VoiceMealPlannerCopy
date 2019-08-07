@@ -5,10 +5,10 @@ const log = bunyan.createLogger({name: "api_call"});
 const apiKey = "F40FD4C81C095B2EA51C78AD3D676237"
 
 
-exports.searchRecipes = function(searchTerm, parameters){
+exports.searchRecipes = function(searchTerm, parameters, top = 50){
     let filter = concatParameters(parameters)
     var options = { method: 'GET',
-        url: `https://tescomealplannertest.search.windows.net/indexes/recipeindex/docs?api-version=2019-05-06&$count=true&search=${searchTerm}${(filter === "" ? '' : `&$filter=${filter}`)}`,
+        url: `https://tescomealplannertest.search.windows.net/indexes/recipeindex/docs?api-version=2019-05-06&$count=true&search=${searchTerm}${(filter === "" ? '' : `&$filter=${filter}`)}&$top=${top}`,
         // qs: { 'api-version': '2019-05-06', search: searchTerm, '$count': "true", '$filter': filter },
         headers: {
             Accept: '*/*',

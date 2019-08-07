@@ -121,8 +121,12 @@ app.intent('Set_Date', (conv, {date}) => {
 
 async function countCheck(conv, food, food1){
   if (conv.data.count === 0) {
-  conv.data.food = await apiSearch.searchRecipes(`${food} ${food1}`,conv.data.preferences)
-      conv.data.preferences = await dbutils.loadPrefences(conv.data.userId)
+    if (food !== "") {
+      conv.data.food = await apiSearch.searchRecipes(`${food} ${food1}`,conv.data.preferences, 10)
+    } else {
+      conv.data.food = await apiSearch.searchRecipes(`${food} ${food1}`,conv.data.preferences)
+    }
+    conv.data.preferences = await dbutils.loadPrefences(conv.data.userId)
     log.info("COUNT 0" + conv.data.food.length)
     return showRecipe(conv)
   } else {
