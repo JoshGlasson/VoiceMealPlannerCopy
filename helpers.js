@@ -18,7 +18,6 @@ const preferencesNames = {
 exports.readParameters = function (parameters){
   let speech = ""
   if(parameters && parameters.length > 0){
-    // speech = speech + ' and '
     for(let index in parameters) {
       if(parameters.length === 1) {
         speech = speech + `${preferencesNames[parameters[index]]} `
@@ -27,7 +26,7 @@ exports.readParameters = function (parameters){
             speech = speech + `${preferencesNames[parameters[index]]}, `
           } else {
             speech = speech.slice(0,-2)
-            speech = speech + ` or ${preferencesNames[parameters[index]]}`
+            speech = speech + ` and ${preferencesNames[parameters[index]]}`
           }
         }
     }
