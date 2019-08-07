@@ -47,7 +47,7 @@ app.intent('Default Welcome Intent', (conv) => {
 
     return dbutils.loadPrefences(conv.data.userId).then((response) => {
       conv.data.preferences = response
-      conv.ask(`<speak> Hi again, ${googleName}. What would you like to do: <break time="300ms" /> Plan a meal, manage your preferences or review food diary? You can return to this menu by saying home at any time.</speak>`);
+      conv.ask(`<speak> Hi again, ${googleName}. You can return to this menu by saying home at any time. What would you like to do: <break time="300ms" /> Plan a meal, manage your preferences or review food diary?</speak>`);
       conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary' ));
     });
   }
@@ -55,14 +55,14 @@ app.intent('Default Welcome Intent', (conv) => {
 
 app.intent('actions_intent_PERMISSION', (conv, params, permissionGranted) => {
   if (!permissionGranted) {
-    conv.ask(`<speak>OK, no worries. What would you like to do: <break time="300ms" /> plan a meal, manage your preferences or review food diary? You can return to this menu by saying home at any time.</speak>`);
+    conv.ask(`<speak>OK, no worries. You can return to this menu by saying home at any time. What would you like to do: <break time="300ms" /> plan a meal, manage your preferences or review food diary?</speak>`);
     conv.data.userId = helpers.checkUserId(conv, conv.data.userId);
     conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
   } else {
     conv.user.storage.userName = conv.user.name.display;
     conv.data.userId = helpers.checkUserId(conv, conv.data.userId);
     conv.ask(`<speak>Thanks, ${conv.user.storage.userName}. ` +
-      `What would you like to do: <break time="300ms" /> plan a meal, manage your preferences or review food diary? You can return to this menu by saying home at any time.</speak>`);
+      `You can return to this menu by saying home at any time. What would you like to do: <break time="300ms" /> plan a meal, manage your preferences or review food diary?</speak>`);
     conv.ask(new Suggestions('plan a meal', 'preferences', 'food diary'));
   }
 });
@@ -185,7 +185,7 @@ function showRecipe(conv){
   if (conv.data.food.length > 0) {
     helpers.move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
     conv.data.foodChoice = conv.data.food.pop();
-    conv.ask("How about " + conv.data.foodChoice.recipe);
+    conv.ask("I found " + conv.data.foodChoice.recipe + " Let me know if you want this meal, or if you want more information.");
     conv.ask(new BasicCard({
       title: conv.data.foodChoice.recipe,
       buttons: new Button({
@@ -203,13 +203,11 @@ function showRecipe(conv){
                 alt: `Image of ${conv.data.foodChoice.recipe}`,
       }),
     }));
+    conv.ask(new Suggestions('yes', 'no', 'more information'));
     conv.data.count++
     if (conv.data.count % 4 === 0){
-      conv.ask("Let me know if you want this meal, or if you want more information. Tell me something else you'd like to eat to search for different recipes.")
-    } else {
-      conv.ask("Let me know if you want this meal, or if you want more information.");
-    }
-    conv.ask(new Suggestions('yes', 'no', 'more information'));
+      conv.ask("Tell me something else you'd like to eat to search for different recipes.")
+    } 
     return 
   } else {
     conv.ask("That's all the results, please search for something else or say home for main menu");
@@ -419,7 +417,7 @@ app.intent('Meal_Inspiration', (conv) => {
   conv.data.cuisineChoiceOptionOne = conv.data.cuisine.pop();
   helpers.move(conv.data.cuisine, Math.floor(Math.random()*conv.data.cuisine.length), conv.data.cuisine.length -1);
   conv.data.cuisineChoiceOptionTwo = conv.data.cuisine.pop();
-  conv.ask(`Ok, would you like a ${conv.data.cuisineChoiceOptionOne} or ${conv.data.cuisineChoiceOptionTwo} recipe?`)
+  conv.ask(`Ok, please pick either: ${conv.data.cuisineChoiceOptionOne}, ${conv.data.cuisineChoiceOptionTwo}, or something else?`)
 })
 
 app.intent('Meal_Inspiration_Rejected', (conv) => {
@@ -430,7 +428,7 @@ app.intent('Meal_Inspiration_Rejected', (conv) => {
   conv.data.cuisineChoiceOptionOne = conv.data.cuisine.pop();
   helpers.move(conv.data.cuisine, Math.floor(Math.random()*conv.data.cuisine.length), conv.data.cuisine.length -1);
   conv.data.cuisineChoiceOptionTwo = conv.data.cuisine.pop();
-  conv.ask(`Ok, would you like a ${conv.data.cuisineChoiceOptionOne} or ${conv.data.cuisineChoiceOptionTwo} recipe?`)
+  conv.ask(`Ok, please pick either: ${conv.data.cuisineChoiceOptionOne}, ${conv.data.cuisineChoiceOptionTwo}, or something else?`)
 })
 
 app.intent('Meal_Inspiration - Accepted', (conv, {cuisine}) => {
