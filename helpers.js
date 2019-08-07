@@ -74,4 +74,4 @@ exports.inputParameters = function (input) {
       return parameters
 }
 
-console.log(this.readParameters(["vegan"]))
+// console.log(this.readParameters(["vegan"]))
