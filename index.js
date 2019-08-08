@@ -152,26 +152,28 @@ function replaceCheck(conv, date){
       .then(function(foodInfo){
         log.info("FOUND IN DB "+ foodInfo)
         conv.ask(`You already have a meal for this date, would you like to replace ${foodInfo.recipe} with ${conv.data.foodChoice.recipe}?`)
-        conv.ask(new BrowseCarousel({
-          items: [
-            new BrowseCarouselItem({
-              title: foodInfo.recipe,
-              url: `https://realfood.tesco.com${foodInfo.details.href}`,
-              image: new Image({
-                url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
-                alt: `Image of ${foodInfo.recipe}`,
+        if (conv.screen) {
+          conv.ask(new BrowseCarousel({
+            items: [
+              new BrowseCarouselItem({
+                title: foodInfo.recipe,
+                url: `https://realfood.tesco.com${foodInfo.details.href}`,
+                image: new Image({
+                  url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
+                  alt: `Image of ${foodInfo.recipe}`,
+                }),
               }),
-            }),
-            new BrowseCarouselItem({
-              title: conv.data.foodChoice.recipe,
-              url: `https://realfood.tesco.com${conv.data.foodChoice.details.href}`,
-              image: new Image({
-                url: `https://realfood.tesco.com${conv.data.foodChoice.details.imageLink}`,
-                alt: `Image of ${conv.data.foodChoice.recipe}`,
+              new BrowseCarouselItem({
+                title: conv.data.foodChoice.recipe,
+                url: `https://realfood.tesco.com${conv.data.foodChoice.details.href}`,
+                image: new Image({
+                  url: `https://realfood.tesco.com${conv.data.foodChoice.details.imageLink}`,
+                  alt: `Image of ${conv.data.foodChoice.recipe}`,
+                }),
               }),
-            }),
-          ],
-        }));
+            ],
+          }))
+        }
       conv.ask(new Suggestions('yes', 'no'))})  
     } else {
       dbutils.addToDb(conv, conv.data.userId, date)
@@ -328,14 +330,16 @@ app.intent("Review_Food_Diary - time period", (conv, {duration, week, number}) =
         speech: '<speak>' + speech + ' Do you want to check any other date?</speak>',
         text: string + ' Do you want to check any other date?'  
       }))
-      if(carouselItems.length > 1){
-        conv.ask(new BrowseCarousel({
-          items: carouselItems,
-        }));
-      } else {
-        conv.ask(diaryCard)
-    }
-      conv.ask(new Suggestions('yes', 'no')); 
+      if(conv.screen){
+        if(carouselItems.length > 1){
+          conv.ask(new BrowseCarousel({
+            items: carouselItems,
+          }));
+        } else {
+          conv.ask(diaryCard)
+        }
+        conv.ask(new Suggestions('yes', 'no')); 
+      }
     }
   })
 })
