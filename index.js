@@ -186,7 +186,7 @@ function showRecipe(conv){
   if (conv.data.food.length > 0) {
     helpers.move(conv.data.food, Math.floor(Math.random()*conv.data.food.length), conv.data.food.length -1);
     conv.data.foodChoice = conv.data.food.pop();
-    conv.ask("I found " + conv.data.foodChoice.recipe + " Let me know if you want this meal, or if you want more information.");
+    conv.ask("I found " + conv.data.foodChoice.recipe + ", let me know if you want this meal, or if you want more information.");
     conv.ask(new BasicCard({
       title: conv.data.foodChoice.recipe,
       buttons: new Button({
