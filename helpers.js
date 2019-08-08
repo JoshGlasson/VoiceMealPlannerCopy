@@ -6,7 +6,7 @@ const preferencesNames = {
   diabetic: "low sugar",
   eggFree: "eggs free",
   glutenFree: "gluten free",
-  healthyRecipies: "healthy",
+  healthyRecipes: "healthy",
   lowCalorie: "low calories",
   lowFat: "low fat",
   nutFree: "nut free",
