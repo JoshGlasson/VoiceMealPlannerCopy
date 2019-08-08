@@ -1,9 +1,10 @@
 const bunyan = require('bunyan');
 const log = bunyan.createLogger({name: "info_dbutils"});
+const dbKey = process.env.TMP_DATABASE_KEY
 
 var mongoClient = require("mongodb").MongoClient;
 var db = {};
-mongoClient.connect("mongodb://tmptest:kEecgUIWgCcht8qjBhYNDJajOKt0JVj1rynvPPxgsDRv30AL6SLilUVgCjmgGEkT9L2Pnxj8ZiXjjwgvnkfpLw%3D%3D@tmptest.documents.azure.com:10255/?ssl=true", { useNewUrlParser: true },function (err, client) {
+mongoClient.connect(`mongodb://tmptest:${dbKey}@tmptest.documents.azure.com:10255/?ssl=true`, { useNewUrlParser: true },function (err, client) {
   db = client.db("testdatabase");  
 });
 

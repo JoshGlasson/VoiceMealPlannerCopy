@@ -2,7 +2,7 @@ const rp = require('request-promise');
 const bunyan = require('bunyan');
 const log = bunyan.createLogger({name: "api_call"});
 
-const apiKey = "F40FD4C81C095B2EA51C78AD3D676237"
+const apiKey = process.env.REALFOOD_API_KEY;
 
 
 exports.searchRecipes = function(searchTerm, parameters, top = 50){
