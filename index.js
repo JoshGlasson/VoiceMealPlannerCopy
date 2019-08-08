@@ -10,7 +10,8 @@ const {
         Button,
         BrowseCarousel,
         BrowseCarouselItem,
-        SimpleResponse
+        SimpleResponse,
+        Carousel
       } = require('actions-on-google');
 
 const helpers = require('./helpers');
@@ -153,26 +154,48 @@ function replaceCheck(conv, date){
         log.info("FOUND IN DB "+ foodInfo)
         conv.ask(`You already have a meal for this date, would you like to replace ${foodInfo.recipe} with ${conv.data.foodChoice.recipe}?`)
         if (conv.screen) {
-          conv.ask(new BrowseCarousel({
-            items: [
-              new BrowseCarouselItem({
-                title: foodInfo.recipe,
-                url: `https://realfood.tesco.com${foodInfo.details.href}`,
-                image: new Image({
-                  url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
-                  alt: `Image of ${foodInfo.recipe}`,
+          if(conv.surface.capabilities.has('actions.capability.WEB_BROWSER')){
+            conv.ask(new BrowseCarousel({
+              items: [
+                new BrowseCarouselItem({
+                  title: foodInfo.recipe,
+                  url: `https://realfood.tesco.com${foodInfo.details.href}`,
+                  image: new Image({
+                    url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
+                    alt: `Image of ${foodInfo.recipe}`,
+                  }),
                 }),
-              }),
-              new BrowseCarouselItem({
-                title: conv.data.foodChoice.recipe,
-                url: `https://realfood.tesco.com${conv.data.foodChoice.details.href}`,
-                image: new Image({
-                  url: `https://realfood.tesco.com${conv.data.foodChoice.details.imageLink}`,
-                  alt: `Image of ${conv.data.foodChoice.recipe}`,
+                new BrowseCarouselItem({
+                  title: conv.data.foodChoice.recipe,
+                  url: `https://realfood.tesco.com${conv.data.foodChoice.details.href}`,
+                  image: new Image({
+                    url: `https://realfood.tesco.com${conv.data.foodChoice.details.imageLink}`,
+                    alt: `Image of ${conv.data.foodChoice.recipe}`,
+                  }),
                 }),
-              }),
-            ],
-          }))
+              ],
+            }))
+          } else {
+            conv.ask(new Carousel({
+              items: {
+                'SELECTION_KEY_OLD_MEAL': {
+                  title: foodInfo.recipe,
+                  image: new Image({
+                    url: `https://realfood.tesco.com${foodInfo.details.imageLink}`,
+                    alt: `Image of ${foodInfo.recipe}`,
+                  }),
+                },
+                'SELECTION_KEY_NEW_MEAL': {
+                  title: conv.data.foodChoice.recipe,
+                  image: new Image({
+                    url: `https://realfood.tesco.com${conv.data.foodChoice.details.imageLink}`,
+                    alt: `Image of ${conv.data.foodChoice.recipe}`,
+                  }),
+                },
+              }
+            })
+            )
+          }
         }
       conv.ask(new Suggestions('yes', 'no'))})  
     } else {
@@ -332,9 +355,11 @@ app.intent("Review_Food_Diary - time period", (conv, {duration, week, number}) =
       }))
       if(conv.screen){
         if(carouselItems.length > 1){
-          conv.ask(new BrowseCarousel({
-            items: carouselItems,
-          }));
+          if(conv.surface.capabilities.has('actions.capability.WEB_BROWSER')){
+            conv.ask(new BrowseCarousel({
+              items: carouselItems,
+            }));
+          }
         } else {
           conv.ask(diaryCard)
         }
